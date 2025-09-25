@@ -1,60 +1,80 @@
-# n8n-nodes-TPA
+# n8n-nodes-dependency-analytics
 
-Local node for Red Hat Trusted Profile Analyzer that can be connected to n8n. Red Hat Trusted Profile Analyzer allows exploration of the relationships between an organization's applications, vulnerabilities and dependencies by consuming and managing Software Bill of Materials (SBOMs), Vulnerability Exploitability eXchange (VEX) information from various vulnerability databases. Trusted Profile Analyzer is a tool for DevSecOps and developers to better understand the organization's risk profile.
+This is an [n8n](https://n8n.io/) community node for [Red Hat Trusted Profile Analyzer (TPA)](https://github.com/trustification).
 
+Trusted Profile Analyzer helps organizations explore the relationships between applications, dependencies, and vulnerabilities by consuming and managing:
 
-## Prerequisites
+- **Software Bill of Materials (SBOMs)**
+- **Vulnerability Exploitability eXchange (VEX)** data
+- **Vendor advisories** from vulnerability databases
 
-You need the following installed on your development machine:
+It is designed for **DevSecOps teams and developers** to better understand and reduce organizational risk exposure.
 
-* [git](https://git-scm.com/downloads)
-* Node.js and npm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  npm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-## Using this node
+[Installation](#installation)  
+[Operations](#operations)  
+[Credentials](#credentials) 
+[Compatibility](#compatibility)  
+[Usage](#usage)  
+[Resources](#resources)  
+[Version history](#version-history)  
 
-These are the basic steps for working with the node.
+## Installation
 
-1. Clone the repo
-2. Run `npm i` to install dependencies.
-3. 
-	In your node directory
-	```
-	npm run build
-	npm link
-	```
-  
-4. In the nodes directory within your n8n installation
-	```
-	npm link n8n-nodes-TPA
-	```
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
-* Check your directory
+## Operations
 
-	Make sure you run npm link n8n-nodes-TPA in the nodes directory within your n8n installation. This can be:
+This node currently supports the following operations:
 
-	~/.n8n/custom/
+**SBOM Operations**
 
-5. Start n8n:
-	```
-	n8n start
-	```
-
-## Troubleshooting
-
-There's no custom directory in ~/.n8n local installation.
-
-You have to create custom directory manually and run npm init
+- **Get SBOM Details:** Retrieve metadata for a given SBOM.
+- **List All SBOMs:** Query all SBOMs available in your Dependency Analytics instance.
 
 
-In ~/.n8n directory run:
-```
-mkdir custom 
-cd custom 
-npm init
-```
+**Advisory & Vulnerability Operations**
+
+- **List Advisories:** Fetch advisories published.
+- **Get Advisory Details:** Retrieve details for a specific advisory (CVE link, publication date, issuer).
+- **Link Advisories to SBOMs:** Query advisories relevant to a specific SBOM.
+
+
+**Search Operations**
+
+- **Query by SBOM SHA256.**
+- **Integrate TPA queries into conditionals for downstream automation.**
+
+
+## Credentials
+
+_TO DO_
+
+## Compatibility
+
+- **Minimum tested n8n version:** 1.103.2
+
+- **Node.js**: 22.20.0
+
+- **Tested against Trusted Profile Analyzer API (latest release)**
+
+## Usage
+
+1. Add the Dependency Analytics node to your n8n workflow
+
+2. Select an operation (e.g., “List SBOMs”)
+
+3. Provide required inputs (e.g., SBOM SHA256)
+
+4. Run the workflow and process the results
+
+## Resources
+
+* [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
+* [Trusted Profile Analyzer GitHub](https://github.com/trustification)
+
+## Version history
+
+1.0.0 – Initial release with SBOM, vulnerability, and advisory operations
 
