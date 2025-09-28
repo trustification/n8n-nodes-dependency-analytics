@@ -1,8 +1,8 @@
 # n8n-nodes-dependency-analytics
 
-This is an [n8n](https://n8n.io/) community node for [Red Hat Trusted Profile Analyzer (TPA)](https://github.com/trustification).
+This is an [n8n](https://n8n.io/) community node for [Red Hat Dependency Analytics](https://github.com/trustification).
 
-Trusted Profile Analyzer helps organizations explore the relationships between applications, dependencies, and vulnerabilities by consuming and managing:
+Dependency Analytics helps organizations explore the relationships between applications, dependencies, and vulnerabilities by consuming and managing:
 
 - **Software Bill of Materials (SBOMs)**
 - **Vulnerability Exploitability eXchange (VEX)** data
@@ -44,7 +44,7 @@ This node currently supports the following operations:
 **Search Operations**
 
 - **Query by SBOM SHA256.**
-- **Integrate TPA queries into conditionals for downstream automation.**
+- **Integrate Dependency Analytics queries into conditionals for downstream automation.**
 
 
 ## Credentials
@@ -57,7 +57,7 @@ _TO DO_
 
 - **Node.js**: 22.20.0
 
-- **Tested against Trusted Profile Analyzer API (latest release)**
+- **Tested against Dependency Analytics API (latest release)**
 
 ## Usage
 
@@ -72,7 +72,7 @@ _TO DO_
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
-* [Trusted Profile Analyzer GitHub](https://github.com/trustification)
+* [Dependency Analytics GitHub](https://github.com/trustification)
 
 ## Version history
 

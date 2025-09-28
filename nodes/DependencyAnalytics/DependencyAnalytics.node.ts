@@ -8,17 +8,17 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-export class Tpa implements INodeType {
+export class DependencyAnalytics implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Trusted Profile Analyzer',
-		name: 'tpa',
-		icon: 'file:tpa.svg',
+		displayName: 'Dependency Analytics',
+		name: 'dependencyAnalytics',
+		icon: 'file:DependencyAnalytics.svg',
 		group: ['transform'],
 		version: 2,
 		subtitle: '={{ $display("operation") + " · " + $display("resource") }}',
-		description: 'Get data from Trusted Profile Analyzer API',
+		description: 'Get data from Dependency Analytics API',
 		defaults: {
-			name: 'Trusted Profile Analyzer',
+			name: 'Dependency Analytics',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
