@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/a-oren/n8n-nodes-TPA.git"
+    "url": "https://github.com/trustification/n8n-nodes-dependency-analytics.git"
   },
   "engines": {
     "node": ">=20.15"
