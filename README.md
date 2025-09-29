@@ -12,13 +12,13 @@ It is designed for **DevSecOps teams and developers** to better understand and r
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-[Installation](#installation)  
-[Operations](#operations)  
-[Credentials](#credentials) 
-[Compatibility](#compatibility)  
-[Usage](#usage)  
-[Resources](#resources)  
-[Version history](#version-history)  
+[Installation](#installation)
+[Operations](#operations)
+[Credentials](#credentials)
+[Compatibility](#compatibility)
+[Usage](#usage)
+[Resources](#resources)
+[Version history](#version-history)
 
 ## Installation
 
