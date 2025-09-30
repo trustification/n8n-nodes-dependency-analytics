@@ -1,3 +1,5 @@
+[![ci](https://github.com/trustification/n8n-nodes-dependency-analytics/actions/workflows/ci.yaml/badge.svg)](https://github.com/trustification/n8n-nodes-dependency-analytics/actions/workflows/ci.yaml)
+
 # n8n-nodes-dependency-analytics
 
 This is an [n8n](https://n8n.io/) community node for [Red Hat Dependency Analytics](https://github.com/trustification).
