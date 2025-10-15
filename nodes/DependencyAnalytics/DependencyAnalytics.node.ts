@@ -84,7 +84,7 @@ export class DependencyAnalytics implements INodeType {
 				default: 'vulnerability',
 			},
 
-			// --- Operation (SBOM) ---
+			// Operation (SBOM)
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -98,7 +98,7 @@ export class DependencyAnalytics implements INodeType {
 				default: 'getMany',
 			},
 
-			// --- Operation (Vulnerability) ---
+			// Operation (Vulnerability)
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -117,7 +117,7 @@ export class DependencyAnalytics implements INodeType {
 				default: 'getMany',
 			},
 
-			// --- Operation (Advisory) ---
+			// Operation (Advisory)
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -156,6 +156,128 @@ export class DependencyAnalytics implements INodeType {
 					show: { operation: ['getMany'], resource: ['sbom', 'vulnerability', 'advisory'] },
 				},
 				description: 'Max number of results to return',
+			},
+
+			// SBOM: Sorting
+			{
+				displayName: 'Sorting',
+				name: 'sortingSbom',
+				type: 'fixedCollection',
+				placeholder: 'Add sort rule',
+				typeOptions: { multipleValues: true },
+				displayOptions: { show: { operation: ['getMany'], resource: ['sbom'] } },
+				default: {},
+				options: [
+					{
+						displayName: 'Sort',
+						name: 'sort',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'field',
+								type: 'options',
+								options: [
+									{ name: 'Name', value: 'name' },
+									{ name: 'Packages (Count)', value: 'number_of_packages' },
+									{ name: 'Size (Bytes)', value: 'size' },
+								],
+								default: 'name',
+							},
+							{
+								displayName: 'Direction',
+								name: 'direction',
+								type: 'options',
+								options: [
+									{ name: 'Ascending', value: 'asc' },
+									{ name: 'Descending', value: 'desc' },
+								],
+								default: 'desc',
+							},
+						],
+					},
+				],
+			},
+
+			// Vulnerability: Sorting
+			{
+				displayName: 'Sorting',
+				name: 'sortingVuln',
+				type: 'fixedCollection',
+				placeholder: 'Add sort rule',
+				typeOptions: { multipleValues: true },
+				displayOptions: { show: { operation: ['getMany'], resource: ['vulnerability'] } },
+				default: {},
+				options: [
+					{
+						displayName: 'Sort',
+						name: 'sort',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'field',
+								type: 'options',
+								options: [
+									{ name: 'Identifier (e.g., CVE)', value: 'identifier' },
+									{ name: 'Average Severity', value: 'average_severity' },
+									{ name: 'Average Score', value: 'average_score' },
+								],
+								default: 'identifier',
+							},
+							{
+								displayName: 'Direction',
+								name: 'direction',
+								type: 'options',
+								options: [
+									{ name: 'Ascending', value: 'asc' },
+									{ name: 'Descending', value: 'desc' },
+								],
+								default: 'desc',
+							},
+						],
+					},
+				],
+			},
+
+			// Advisory: Sorting
+			{
+				displayName: 'Sorting',
+				name: 'sortingAdvisory',
+				type: 'fixedCollection',
+				placeholder: 'Add sort rule',
+				typeOptions: { multipleValues: true },
+				displayOptions: { show: { operation: ['getMany'], resource: ['advisory'] } },
+				default: {},
+				options: [
+					{
+						displayName: 'Sort',
+						name: 'sort',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'field',
+								type: 'options',
+								options: [
+									{ name: 'Average Score', value: 'average_score' },
+									{ name: 'Average Severity', value: 'average_severity' },
+									{ name: 'Identifier', value: 'identifier' },
+									{ name: 'Size (Bytes)', value: 'size' },
+									{ name: 'Title', value: 'title' },
+								],
+								default: 'title',
+							},
+							{
+								displayName: 'Direction',
+								name: 'direction',
+								type: 'options',
+								options: [
+									{ name: 'Ascending', value: 'asc' },
+									{ name: 'Descending', value: 'desc' },
+								],
+								default: 'desc',
+							},
+						],
+					},
+				],
 			},
 
 			// Analyze (scoped)
@@ -413,11 +535,33 @@ export class DependencyAnalytics implements INodeType {
 					options,
 				);
 
-				returnData.push({ json: response, pairedItem: { item: i } });
+				// Build rules from the resource-specific collection
+				let rules: SortRule[] = [];
+				if (resource === 'sbom') {
+					rules = this.getNodeParameter('sortingSbom.sort', i, []) as SortRule[];
+				} else if (resource === 'vulnerability') {
+					rules = this.getNodeParameter('sortingVuln.sort', i, []) as SortRule[];
+				} else if (resource === 'advisory') {
+					rules = this.getNodeParameter('sortingAdvisory.sort', i, []) as SortRule[];
+				}
+
+				const items: any[] = Array.isArray(response?.items) ? response.items : [];
+
+				let out = items;
+				if (rules.length) {
+					out = [...items].sort((a, b) => multiCmp(a, b, rules, resource));
+				}
+
+				out = out.slice(0, limit);
+
+				// Re-wrap with original metadata
+				const finalPayload = { ...response, items: out };
+
+				returnData.push({ json: finalPayload, pairedItem: { item: i } });
 				continue;
 			}
 
-			// If we reached here, the operation/resource combo isn't supported.
+			// The operation/resource combo isn't supported.
 			throw new NodeOperationError(
 				this.getNode(),
 				`Unsupported operation "${operation}" for resource "${resource}".`,
@@ -427,4 +571,53 @@ export class DependencyAnalytics implements INodeType {
 
 		return [returnData];
 	}
+}
+type SortRule = { field: string; direction: 'asc' | 'desc' };
+
+const sevRank: Record<string, number> = {
+	critical: 4,
+	high: 3,
+	medium: 2,
+	low: 1,
+	none: 0,
+};
+
+function num(v: any): number | null {
+	if (v === null || v === undefined) return null;
+	return typeof v === 'number' ? v : (Number(v) ?? null);
+}
+
+function cmpField(
+	a: any,
+	b: any,
+	field: string,
+	resource: 'sbom' | 'vulnerability' | 'advisory',
+): number {
+	// Numbers
+	if (['number_of_packages', 'size', 'average_score'].includes(field)) {
+		return (num(a?.[field]) ?? -Infinity) - (num(b?.[field]) ?? -Infinity);
+	}
+	// Vulnerability.severity rank
+	if (resource === 'vulnerability' && field === 'average_severity') {
+		const av = (a?.average_severity ?? '').toString().toLowerCase();
+		const bv = (b?.average_severity ?? '').toString().toLowerCase();
+		return (sevRank[av] ?? -1) - (sevRank[bv] ?? -1);
+	}
+	// Generic string-ish
+	const av = (a?.[field] ?? '').toString().toLowerCase();
+	const bv = (b?.[field] ?? '').toString().toLowerCase();
+	return av < bv ? -1 : av > bv ? 1 : 0;
+}
+
+function multiCmp(
+	a: any,
+	b: any,
+	rules: SortRule[],
+	resource: 'sbom' | 'vulnerability' | 'advisory',
+): number {
+	for (const r of rules) {
+		const base = cmpField(a, b, r.field, resource);
+		if (base !== 0) return r.direction === 'desc' ? -base : base;
+	}
+	return 0;
 }
