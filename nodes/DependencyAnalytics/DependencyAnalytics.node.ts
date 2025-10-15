@@ -158,6 +158,21 @@ export class DependencyAnalytics implements INodeType {
 				description: 'Max number of results to return',
 			},
 
+			{
+				displayName: 'Simplify',
+				name: 'simplify',
+				type: 'boolean',
+				default: true,
+				description:
+					'Whether to return a simplified version of the response instead of the raw data',
+				displayOptions: {
+					show: {
+						resource: ['sbom', 'vulnerability', 'advisory'],
+						operation: ['get', 'getMany'],
+					},
+				},
+			},
+
 			// SBOM: Sorting
 			{
 				displayName: 'Sorting',
@@ -513,7 +528,10 @@ export class DependencyAnalytics implements INodeType {
 					options,
 				);
 
-				returnData.push({ json: response, pairedItem: { item: i } });
+				const simplify = this.getNodeParameter('simplify', i, true) as boolean;
+				const payload = simplify ? simplifyOne(resource, response) : response;
+
+				returnData.push({ json: payload, pairedItem: { item: i } });
 				continue;
 			}
 
@@ -546,6 +564,7 @@ export class DependencyAnalytics implements INodeType {
 				}
 
 				const items: any[] = Array.isArray(response?.items) ? response.items : [];
+				const simplify = this.getNodeParameter('simplify', i, true) as boolean;
 
 				let out = items;
 				if (rules.length) {
@@ -555,7 +574,16 @@ export class DependencyAnalytics implements INodeType {
 				out = out.slice(0, limit);
 
 				// Re-wrap with original metadata
-				const finalPayload = { ...response, items: out };
+				let finalPayload = { ...response, items: out };
+
+				if (simplify) {
+					if (Array.isArray(finalPayload?.items)) {
+						finalPayload = {
+							...finalPayload,
+							items: finalPayload.items.map((it: any) => simplifyOne(resource, it)),
+						};
+					}
+				}
 
 				returnData.push({ json: finalPayload, pairedItem: { item: i } });
 				continue;
@@ -620,4 +648,70 @@ function multiCmp(
 		if (base !== 0) return r.direction === 'desc' ? -base : base;
 	}
 	return 0;
+}
+
+type SBOM = Record<string, any>;
+type Vuln = Record<string, any>;
+type Advisory = Record<string, any>;
+
+function first<T = any>(v: any): T | undefined {
+	return Array.isArray(v) ? v[0] : undefined;
+}
+
+function simplifySbom(item: SBOM) {
+	const d = first(item?.described_by) ?? {};
+	const firstPurl = first(d?.purl)?.purl;
+	return {
+		id: item.id,
+		name: item.name ?? d.name ?? null,
+		version: d.version ?? null,
+		published: item.published ?? null,
+		ingested: item.ingested ?? null,
+		packages: item.number_of_packages ?? null,
+		size: item.size ?? null,
+		sha256: item.sha256 ?? null,
+		purl: firstPurl ?? null,
+		documentId: item.document_id ?? null,
+	};
+}
+
+function simplifyVuln(item: Vuln) {
+	return {
+		identifier: item.identifier ?? null,
+		title: item.title ?? null,
+		published: item.published ?? null,
+		modified: item.modified ?? null,
+		severity: item.average_severity ?? null,
+		score: item.average_score ?? null,
+		cwe: first(item.cwes) ?? null,
+		advisories: Array.isArray(item.advisories) ? item.advisories.length : 0,
+		reserved: item.reserved ?? null,
+		withdrawn: item.withdrawn ?? null,
+	};
+}
+
+function simplifyAdvisory(item: Advisory) {
+	return {
+		documentId: item.document_id ?? null,
+		identifier: item.identifier ?? null,
+		title: item.title ?? null,
+		issuer: item.issuer?.name ?? null,
+		published: item.published ?? null,
+		modified: item.modified ?? null,
+		severity: item.average_severity ?? null,
+		score: item.average_score ?? null,
+		size: item.size ?? null,
+		ingested: item.ingested ?? null,
+	};
+}
+
+function simplifyOne(resource: 'sbom' | 'vulnerability' | 'advisory', obj: any) {
+	switch (resource) {
+		case 'sbom':
+			return simplifySbom(obj);
+		case 'vulnerability':
+			return simplifyVuln(obj);
+		case 'advisory':
+			return simplifyAdvisory(obj);
+	}
 }
