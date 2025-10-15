@@ -5,8 +5,9 @@ import {
 	IExecuteFunctions,
 	INodeExecutionData,
 	IHttpRequestOptions,
-	NodeOperationError,
 } from 'n8n-workflow';
+
+import { throwError } from './Utils';
 
 export class DependencyAnalytics implements INodeType {
 	description: INodeTypeDescription = {
@@ -372,20 +373,14 @@ export class DependencyAnalytics implements INodeType {
 							try {
 								parsed = JSON.parse(trimmed);
 							} catch {
-								throw new NodeOperationError(
+								throwError(
 									this.getNode(),
 									'Invalid JSON. Provide a JSON array of strings, e.g. ["pkg:...","pkg:..."].',
-									{ itemIndex: i },
+									i,
 								);
 							}
 							if (!Array.isArray(parsed) || !parsed.every((x) => typeof x === 'string')) {
-								throw new NodeOperationError(
-									this.getNode(),
-									'PURLs must be a JSON array of strings.',
-									{
-										itemIndex: i,
-									},
-								);
+								throwError(this.getNode(), 'PURLs must be a JSON array of strings.', i);
 							}
 							purls = (parsed as string[]).map((s) => s.trim()).filter(Boolean);
 						} else {
@@ -403,17 +398,15 @@ export class DependencyAnalytics implements INodeType {
 							typeof v === 'string' ? v.trim() : [],
 						);
 					} else {
-						throw new NodeOperationError(
+						throwError(
 							this.getNode(),
 							'Provide PURLs as a JSON array, one-per-line string, or an array expression.',
-							{ itemIndex: i },
+							i,
 						);
 					}
 
 					if (purls.length === 0) {
-						throw new NodeOperationError(this.getNode(), 'Provide at least one PURL.', {
-							itemIndex: i,
-						});
+						throwError(this.getNode(), 'Provide at least one PURL.', i);
 					}
 
 					const uniquePurls = [...new Set(purls)];
@@ -447,15 +440,48 @@ export class DependencyAnalytics implements INodeType {
 					continue;
 				}
 
-				// inputType === 'sbomSha256'
-				const q = (this.getNodeParameter('sbomSha256', i) as string)?.trim();
-				if (!q) {
-					throw new NodeOperationError(
-						this.getNode(),
-						'SBOM SHA-256 is required for Analyze (SBOM Lookup).',
-						{ itemIndex: i },
+				if (inputType === 'sbomSha256') {
+					const q = (this.getNodeParameter('sbomSha256', i) as string)?.trim();
+					console.log('SBOM Q', q);
+
+					if (!q) {
+						throwError(this.getNode(), 'SBOM Query is required for Analyze (SBOM Lookup).', i);
+					}
+
+					// List SBOMs
+					const listOpts: IHttpRequestOptions = {
+						method: 'GET',
+						url: `${base}/sbom/sha256:${q}`,
+						qs: { query: q },
+						returnFullResponse: false,
+					};
+
+					const listResp = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						credentialName,
+						listOpts,
 					);
-				}
+					console.log('LIST RESP', listResp);
+
+					const sbomId = listResp?.id;
+					if (!sbomId) {
+						throwError(this.getNode(), `No SBOM found for query "${q}".`, i);
+					}
+
+					// Advisories for that SBOM
+					const advOpts: IHttpRequestOptions = {
+						method: 'GET',
+						url: `${base}/sbom/${encodeURIComponent(sbomId)}/advisory`,
+						returnFullResponse: false,
+					};
+
+					const advisories = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						credentialName,
+						advOpts,
+					);
+
+					console.log('ADVISORIES', advisories);
 
 				// Fetch the SBOM by sha256
 				const listOpts: IHttpRequestOptions = {
@@ -503,9 +529,7 @@ export class DependencyAnalytics implements INodeType {
 
 				const id = (rawId || '').trim();
 				if (!id) {
-					throw new NodeOperationError(this.getNode(), 'Identifier is required for Get.', {
-						itemIndex: i,
-					});
+					throwError(this.getNode(), 'ID is required in "One" mode.', i);
 				}
 
 				// If the user provided a bare SHA-256, prefix with sha256:
