@@ -22,10 +22,12 @@ test('It contains all expected displayNames in properties', () => {
 		'Limit',
 		'Simplify',
 		'Operation',
+		'Sorting',
 		'Operation',
 		'Input Type',
 		'PURLs',
 		'SBOM SHA-256',
+		'Sorting',
 		'Operation',
 	];
 
