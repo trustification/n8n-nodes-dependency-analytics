@@ -81,70 +81,93 @@ export class DependencyAnalytics implements INodeType {
 				required: true,
 			},
 			{
-				displayName: 'Resources',
-				name: 'resources',
+				displayName: 'Resource',
+				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{ name: 'SBOMs', value: 'sbom' },
-					{ name: 'Vulnerabilities', value: 'vulnerability' },
-					{ name: 'Advisories', value: 'advisory' },
-					{ name: 'Analyze Vulnerability', value: 'analyze' },
+					{ name: 'SBOM', value: 'sbom' },
+					{ name: 'Vulnerability', value: 'vulnerability' },
+					{ name: 'Advisory', value: 'advisory' },
 				],
 				default: 'vulnerability',
 			},
-			// List vs One
+
+			// Operation (SBOM)
 			{
-				displayName: 'Mode',
-				name: 'mode',
+				displayName: 'Operation',
+				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
+				displayOptions: { show: { resource: ['sbom'] } },
 				options: [
-					{ name: 'List', value: 'list' },
-					{ name: 'One', value: 'one' },
+					{ name: 'Get', value: 'get', action: 'Get an SBOM' },
+					{ name: 'Get Many', value: 'getMany', action: 'Get many SBOMS' },
 				],
-
-				default: 'list',
-				displayOptions: {
-					show: { resources: ['sbom', 'advisory', 'vulnerability'] },
-				},
+				default: 'getMany',
 			},
 
-			// ID shows only when "one"
+			// Operation (Vulnerability)
 			{
-				displayName: 'SHA-256 ID',
-				name: 'sha256Id',
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['vulnerability'] } },
+				options: [
+					{ name: 'Get', value: 'get', action: 'Get a vulnerability' },
+					{ name: 'Get Many', value: 'getMany', action: 'Get many vulnerabilities' },
+					{
+						name: 'Analyze',
+						value: 'analyze',
+						action: 'Analyze vulnerabilities from PURLS or SBOM',
+					},
+				],
+				default: 'getMany',
+			},
+
+			// Operation (Advisory)
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['advisory'] } },
+				options: [
+					{ name: 'Get', value: 'get', action: 'Get an advisory' },
+					{ name: 'Get Many', value: 'getMany', action: 'Get many advisories' },
+				],
+				default: 'getMany',
+			},
+
+			// Get (single)
+			{
+				displayName: 'Identifier',
+				name: 'identifier',
 				type: 'string',
 				required: true,
 				default: '',
+				description: 'The SHA-256 ID',
+				placeholder: 'e.g., 3a7bd3e2360a3d...',
 				displayOptions: {
-					show: { resources: ['sbom', 'advisory', 'vulnerability'], mode: ['one'] },
+					show: { operation: ['get'], resource: ['sbom', 'vulnerability', 'advisory'] },
 				},
 			},
 
-			// Query params only when "list"
+			// Get Many
 			{
-				displayName: 'Query Params',
-				name: 'query',
-				type: 'collection',
-				placeholder: 'Add param',
-				default: {},
-				options: [
-					{
-						displayName: 'Limit',
-						name: 'limit',
-						type: 'number',
-						default: 50,
-						description: 'Max number of results to return',
-						typeOptions: {
-							minValue: 1,
-						},
-					},
-				],
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				default: 50,
+				typeOptions: { minValue: 1 },
 				displayOptions: {
-					show: { resources: ['sbom', 'advisory', 'vulnerability'], mode: ['list'] },
+					show: { operation: ['getMany'], resource: ['sbom', 'vulnerability', 'advisory'] },
 				},
+				description: 'Max number of results to return',
 			},
+
+			// Analyze (scoped)
 			{
 				displayName: 'Input Type',
 				name: 'inputType',
@@ -154,7 +177,7 @@ export class DependencyAnalytics implements INodeType {
 					{ name: 'SBOM Lookup (SHA-256)', value: 'sbomSha256' },
 				],
 				default: 'purls',
-				displayOptions: { show: { resources: ['analyze'] } },
+				displayOptions: { show: { resource: ['vulnerability'], operation: ['analyze'] } },
 			},
 			{
 				displayName: 'PURLs',
@@ -165,20 +188,19 @@ export class DependencyAnalytics implements INodeType {
 				placeholder:
 					'["pkg:npm/lodash@4.17.21","pkg:maven/org.apache.commons/commons-text@1.10.0"]\n# or:\npkg:npm/lodash@4.17.21\npkg:maven/org.apache.commons/commons-text@1.10.0',
 				description: 'Paste a JSON array of PURLs, or one PURL per line',
-				displayOptions: { show: { resources: ['analyze'], inputType: ['purls'] } },
+				displayOptions: {
+					show: { resource: ['vulnerability'], operation: ['analyze'], inputType: ['purls'] },
+				},
 			},
 			{
 				displayName: 'SBOM SHA-256',
 				name: 'sbomSha256',
 				type: 'string',
 				default: '',
-				placeholder: 'e.g., 3a7bd3e2360a3d...',
+				placeholder: 'e.g., 3a7bd3e2360a3d…',
 				description: 'The SHA-256 checksum of the SBOM file to analyze',
 				displayOptions: {
-					show: {
-						resources: ['analyze'],
-						inputType: ['sbomSha256'],
-					},
+					show: { resource: ['vulnerability'], operation: ['analyze'], inputType: ['sbomSha256'] },
 				},
 			},
 		],
@@ -187,9 +209,14 @@ export class DependencyAnalytics implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
+		const defaultHeaders = { Accept: 'application/json', 'Content-Type': 'application/json' };
 
 		for (let i = 0; i < items.length; i++) {
-			const resource = this.getNodeParameter('resources', i) as string;
+			const resource = this.getNodeParameter('resource', i) as
+				| 'sbom'
+				| 'vulnerability'
+				| 'advisory';
+			const operation = this.getNodeParameter('operation', i) as 'get' | 'getMany' | 'analyze';
 			const baseURLRaw = this.getNodeParameter('baseURL', i) as string;
 			const base = baseURLRaw.replace(/\/+$/, '');
 
@@ -200,7 +227,8 @@ export class DependencyAnalytics implements INodeType {
 					? 'trustifyAuthCodeOAuth2Api'
 					: 'trustifyClientOAuth2Api';
 
-			if (resource === 'analyze') {
+			// Analyze (only for vulnerability)
+			if (resource === 'vulnerability' && operation === 'analyze') {
 				const inputType = this.getNodeParameter('inputType', i) as 'sbomSha256' | 'purls';
 
 				if (inputType === 'purls') {
@@ -208,12 +236,10 @@ export class DependencyAnalytics implements INodeType {
 					let purls: string[] = [];
 
 					if (Array.isArray(rawParam)) {
-						// Expression returning an array
 						purls = rawParam.flatMap((v) => (typeof v === 'string' ? v.trim() : []));
 					} else if (typeof rawParam === 'string') {
 						const trimmed = rawParam.trim();
 						if (trimmed.startsWith('[')) {
-							// JSON array pasted as text
 							let parsed: unknown;
 							try {
 								parsed = JSON.parse(trimmed);
@@ -229,7 +255,6 @@ export class DependencyAnalytics implements INodeType {
 							}
 							purls = (parsed as string[]).map((s) => s.trim()).filter(Boolean);
 						} else {
-							// One-per-line text
 							purls = trimmed
 								.split(/\r?\n/)
 								.map((s) => s.trim())
@@ -264,13 +289,14 @@ export class DependencyAnalytics implements INodeType {
 						json: true,
 					};
 
-					let analysis: any;
 					try {
-						analysis = await this.helpers.httpRequestWithAuthentication.call(
+						const analysis = await this.helpers.httpRequestWithAuthentication.call(
 							this,
 							credentialName,
 							postOpts,
 						);
+
+						returnData.push({ json: analysis, pairedItem: { item: i } });
 					} catch (err) {
 						if (this.continueOnFail()) {
 							returnData.push({
@@ -281,19 +307,11 @@ export class DependencyAnalytics implements INodeType {
 						}
 						throw err;
 					}
-
-					returnData.push({
-						json: { request: analysis },
-						pairedItem: { item: i },
-					});
-
 					continue;
 				}
 
 				if (inputType === 'sbomSha256') {
 					const q = (this.getNodeParameter('sbomSha256', i) as string)?.trim();
-					console.log('SBOM Q', q);
-
 					if (!q) {
 						throwError(this.getNode(), 'SBOM Query is required for Analyze (SBOM Lookup).', i);
 					}
@@ -311,7 +329,6 @@ export class DependencyAnalytics implements INodeType {
 						credentialName,
 						listOpts,
 					);
-					console.log('LIST RESP', listResp);
 
 					const sbomId = listResp?.id;
 					if (!sbomId) {
@@ -331,16 +348,7 @@ export class DependencyAnalytics implements INodeType {
 						advOpts,
 					);
 
-					console.log('ADVISORIES', advisories);
-
-					returnData.push({
-						json: {
-							sbomId,
-							query: q,
-							advisories,
-						},
-						pairedItem: { item: i },
-					});
+					returnData.push({ json: { sbomId, advisories }, pairedItem: { item: i } });
 					continue;
 				}
 			}
@@ -348,39 +356,71 @@ export class DependencyAnalytics implements INodeType {
 			// Generic GET path (sbom / vulnerability / advisory; list/one)
 			const fullBase = `${base}/${resource}`;
 			let fullUrl = fullBase;
-			const mode = this.getNodeParameter('mode', i) as string;
 
-			if (mode === 'one') {
-				const id = this.getNodeParameter('sha256Id', i) as string;
+			if (operation === 'get') {
+				const rawId =
+					(this.getNodeParameter('identifier', i, '') as string) ||
+					(this.getNodeParameter('sha256Id', i, '') as string);
+				const id = (rawId || '').trim();
 				if (!id) {
 					throwError(this.getNode(), 'ID is required in "One" mode.', i);
 				}
-				fullUrl += `/sha:${encodeURIComponent(id)}`;
+
+				// If the user provided a bare SHA-256, prefix with sha256:
+				const normalizedId = /^sha256:/i.test(id)
+					? id
+					: /^[a-f0-9]{64}$/i.test(id)
+						? `sha256:${id}`
+						: id;
+
+				const options: IHttpRequestOptions = {
+					method: 'GET',
+					url: `${fullBase}/${encodeURIComponent(normalizedId)}`,
+					returnFullResponse: false,
+					headers: defaultHeaders,
+				};
+
+				const response = await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					credentialName,
+					options,
+				);
+
+				returnData.push({ json: response, pairedItem: { item: i } });
+				continue;
 			}
 
 			// Query parameters for list mode
-			let qs: Record<string, any> = {};
-			if (mode === 'list') {
-				qs = (this.getNodeParameter('query', i) as any) ?? {};
+			if (operation === 'getMany') {
+				const limit = (this.getNodeParameter('limit', i, 50) as number) || 50;
+				const qs: Record<string, any> = { limit };
+
+				const options: IHttpRequestOptions = {
+					method: 'GET',
+					url: fullUrl,
+					qs,
+					returnFullResponse: false,
+					headers: defaultHeaders,
+				};
+
+				const response = await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					credentialName,
+					options,
+				);
+
+				returnData.push({
+					json: response,
+					pairedItem: { item: i },
+				});
+				continue;
 			}
 
-			const options: IHttpRequestOptions = {
-				method: 'GET',
-				url: fullUrl,
-				qs,
-				returnFullResponse: false,
-			};
-
-			const response = await this.helpers.httpRequestWithAuthentication.call(
-				this,
-				credentialName,
-				options,
+			throwError(
+				this.getNode(),
+				`Unsupported operation "${operation}" for resource "${resource}".`,
+				i,
 			);
-
-			returnData.push({
-				json: response,
-				pairedItem: { item: i },
-			});
 		}
 
 		return [returnData];
