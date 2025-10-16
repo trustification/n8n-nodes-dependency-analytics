@@ -2,6 +2,8 @@ import type { IExecuteFunctions, INodeExecutionData, IHttpRequestOptions } from 
 import { authedRequest, chooseCredential, defaultJsonHeaders, getBase } from '../utils/http';
 import { simplifyOne } from '../utils/simplify';
 import { throwError } from '../utils/errors';
+import { multiCmp, SortRule } from '../utils/sort';
+import { readSortRules } from '../utils/readSort';
 
 export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemIndex: number }) {
 	const credentialName = chooseCredential(ctx, itemIndex);
@@ -35,10 +37,16 @@ export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
 	};
 
 	const res = (await authedRequest(ctx, credentialName, options)) as any;
-	const items: any[] = Array.isArray(res?.items) ? res.items.slice(0, limit) : [];
+	const items: any[] = Array.isArray(res?.items) ? res.items : [];
+	const rules: SortRule[] = readSortRules(ctx, itemIndex, 'advisory');
 	const simplify = ctx.getNodeParameter('simplify', itemIndex, true) as boolean;
 
-	const finalItems = simplify ? items.map((it) => simplifyOne('advisory', it)) : items;
+	let out = items;
+	if (rules.length) out = [...out].sort((a, b) => multiCmp(a, b, rules, 'advisory'));
+
+	out = out.slice(0, limit);
+
+	const finalItems = simplify ? out.map((it) => simplifyOne('advisory', it)) : out;
 
 	return [{ json: { ...res, items: finalItems } } as INodeExecutionData];
 }
