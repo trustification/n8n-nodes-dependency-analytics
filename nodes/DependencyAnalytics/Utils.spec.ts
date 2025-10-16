@@ -1,4 +1,4 @@
-import { throwError } from './Utils';
+import { throwError } from './utils/errors';
 import { INode, INodeParameters, INodeCredentials, NodeOperationError } from 'n8n-workflow';
 
 test('It should throw error with specified INode, message and index', () => {

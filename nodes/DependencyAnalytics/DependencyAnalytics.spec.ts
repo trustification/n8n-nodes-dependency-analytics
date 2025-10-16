@@ -18,14 +18,15 @@ test('It contains all expected displayNames in properties', () => {
 		'Authentication Method',
 		'Base URL',
 		'Resource',
-		'Operation',
-		'Operation',
-		'Operation',
 		'Identifier',
 		'Limit',
+		'Simplify',
+		'Operation',
+		'Operation',
 		'Input Type',
 		'PURLs',
 		'SBOM SHA-256',
+		'Operation',
 	];
 
 	expect(displayNames).toEqual(expectedDisplayNames);
