@@ -30,8 +30,8 @@ export const advisoryProperties: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: { show: { resource: ['advisory'] } },
 		options: [
-			{ name: 'Get', value: 'get', action: 'Get an advisory' },
-			{ name: 'Get Many', value: 'getMany', action: 'Get many advisories' },
+			{ name: 'Get', value: 'get', action: 'Get advisory', description: 'Retrieve an advisory' },
+			{ name: 'Get Many', value: 'getMany', action: 'Get many advisories', description: 'Retrieve a list of advisories' },
 		],
 		default: 'getMany',
 	},

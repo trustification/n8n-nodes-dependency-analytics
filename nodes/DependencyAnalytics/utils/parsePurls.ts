@@ -25,7 +25,7 @@ export function parsePurls(
 		if (trimmed.startsWith('[')) {
 			const parsed = JSON.parse(trimmed);
 			if (!isStringArray(parsed)) {
-				throwError(_ctx.getNode(), 'PURLs must be a JSON array of strings.', _itemIndex);
+				throwError(_ctx.getNode(), "Provide 'PURLs' as a JSON array of strings.", _itemIndex);
 			}
 			return dedupe(parsed.map((s: any) => s.trim()).filter(Boolean));
 		}
@@ -43,14 +43,14 @@ export function parsePurls(
 	if (rawParam && typeof rawParam === 'object' && 'purls' in (rawParam as any)) {
 		const candidate = (rawParam as { purls: any }).purls;
 		if (!isStringArray(candidate)) {
-			throwError(_ctx.getNode(), '`purls` must be an array of strings.', _itemIndex);
+			throwError(_ctx.getNode(), "Provide 'purls' as an array of strings.", _itemIndex);
 		}
 		return dedupe(candidate.map((s: any) => s.trim()).filter(Boolean));
 	}
 
 	throwError(
 		_ctx.getNode(),
-		'Provide PURLs as a JSON array, one-per-line string, or an array expression.',
+		"Provide 'PURLs' as a JSON array, a one-per-line string, or an array expression.",
 		_itemIndex,
 	);
 

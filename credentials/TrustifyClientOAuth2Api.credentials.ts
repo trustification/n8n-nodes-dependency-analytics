@@ -39,7 +39,7 @@ export class TrustifyClientOAuth2Api implements ICredentialType {
 			name: 'scope',
 			type: 'string' as const,
 			default: 'read:document',
-			placeholder: 'read:document',
+			placeholder: 'e.g. read:document',
 			description: 'Scopes to request (space-separated)',
 		},
 		{
