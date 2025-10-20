@@ -1,9 +1,9 @@
-import type { IExecuteFunctions, INodeExecutionData, IHttpRequestOptions } from 'n8n-workflow';
+import type { IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
 import { authedRequest, chooseCredential, defaultJsonHeaders, getBase } from '../utils/http';
-import { simplifyOne } from '../utils/simplify';
 import { throwError } from '../utils/errors';
 import { multiCmp, SortRule } from '../utils/sort';
 import { readSortRules } from '../utils/readSort';
+import { shapeOutput } from '../utils/output';
 
 export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemIndex: number }) {
 	const credentialName = chooseCredential(ctx, itemIndex);
@@ -25,8 +25,7 @@ export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemInde
 	};
 
 	const res = await authedRequest(ctx, credentialName, options);
-	const simplify = ctx.getNodeParameter('simplify', itemIndex, true) as boolean;
-	return simplify ? { ...simplifyOne('sbom', res) } : res;
+	return shapeOutput(ctx, itemIndex, 'sbom', res);
 }
 
 export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemIndex: number }) {
@@ -45,14 +44,12 @@ export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
 	const res = (await authedRequest(ctx, credentialName, options)) as any;
 	const items: any[] = Array.isArray(res?.items) ? res.items.slice(0, limit) : [];
 	const rules: SortRule[] = readSortRules(ctx, itemIndex, 'sbom');
-	const simplify = ctx.getNodeParameter('simplify', itemIndex, true) as boolean;
 
 	let out = items;
 	if (rules.length) out = [...out].sort((a, b) => multiCmp(a, b, rules, 'sbom'));
 
 	out = out.slice(0, limit);
 
-	const finalItems = simplify ? out.map((it) => simplifyOne('sbom', it)) : out;
-
-	return [{ json: { ...res, items: finalItems } } as INodeExecutionData];
+	const finalItems = out.map((it) => shapeOutput(ctx, itemIndex, 'sbom', it));
+  return [{ json: { ...res, items: finalItems } }];
 }

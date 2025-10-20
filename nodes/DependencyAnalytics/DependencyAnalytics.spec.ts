@@ -13,21 +13,23 @@ test('It contains the icon', () => {
 test('It contains all expected displayNames in properties', () => {
 	const node = new DependencyAnalytics();
 	const displayNames = node.description.properties.map((prop: any) => prop.displayName);
-
 	const expectedDisplayNames = [
 		'Authentication Method',
 		'Base URL',
 		'Resource',
 		'Identifier',
 		'Limit',
-		'Simplify',
+		'Output',
+		'Selected Fields',
 		'Operation',
 		'Sorting',
+		'Selected Fields',
 		'Operation',
 		'Input Type',
 		'PURLs',
 		'SBOM SHA-256',
 		'Sorting',
+		'Selected Fields',
 		'Operation',
 	];
 
