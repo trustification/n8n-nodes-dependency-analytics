@@ -45,7 +45,7 @@ displayName = 'Trustify (Authorization Code - User Authentication) OAuth2 API';
 			name: 'scope',
 			type: 'string' as const,
 			default: 'read:document',
-			placeholder: 'read:document',
+			placeholder: 'e.g. read:document',
 			description: 'Scopes to request (space-separated)',
 		},
 		{

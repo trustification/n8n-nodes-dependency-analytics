@@ -18,7 +18,7 @@ export const dispatch: Record<
 			analyze: async ({ ctx, itemIndex }) => {
 				throwError(
 					ctx.getNode(),
-					'Unsupported operation "analyze" for resource "sbom".',
+					"The 'Analyze' operation is not available for 'SBOM'.",
 					itemIndex,
 				);
 			},
@@ -34,7 +34,7 @@ export const dispatch: Record<
 			analyze: async ({ ctx, itemIndex }) => {
 				throwError(
 					ctx.getNode(),
-					'Unsupported operation "analyze" for resource "sbom".',
+					"The 'Analyze' operation is not available for 'Advisory'.",
 					itemIndex,
 				);
 			},

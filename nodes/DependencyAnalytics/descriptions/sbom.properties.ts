@@ -18,7 +18,7 @@ export const sbomProperties: INodeProperties[] = [
 			{ name: 'Size (Bytes)', value: 'size' },
 			{ name: 'Version', value: 'version' },
 		],
-		description: 'Fields to include when using “Selected fields”. ID is always included.',
+		description: "Fields to include when using 'Selected Fields'. 'ID' is always included.",
 		displayOptions: { show: { operation: ['get', 'getMany'], resource: ['sbom'], outputMode: ['selected'] } },
 	},
 
@@ -29,8 +29,8 @@ export const sbomProperties: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: { show: { resource: ['sbom'] } },
 		options: [
-			{ name: 'Get', value: 'get', action: 'Get an SBOM' },
-			{ name: 'Get Many', value: 'getMany', action: 'Get many sboms' },
+			{ name: 'Get', value: 'get', action: 'Get sbom', description: 'Retrieve an sbom' },
+			{ name: 'Get Many', value: 'getMany', action: 'Get many sboms', description: 'Retrieve a list of sboms' },
 		],
 		default: 'getMany',
 	},

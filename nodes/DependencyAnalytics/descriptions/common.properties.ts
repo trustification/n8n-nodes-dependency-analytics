@@ -17,7 +17,7 @@ export const commonProperties: INodeProperties[] = [
 		name: 'baseURL',
 		type: 'string',
 		default: 'http://localhost:8080/api/v2/',
-		placeholder: 'https://your-trustify-instance.com/api/v2/',
+		placeholder: 'e.g. https://your-trustify-instance.com/api/v2/',
 		description: 'The base URL for your Trustify API instance',
 		required: true,
 	},
@@ -42,7 +42,7 @@ export const commonProperties: INodeProperties[] = [
 		required: true,
 		default: '',
 		description: 'The SHA-256 ID or normalized identifier',
-		placeholder: 'e.g., 3a7bd3e2360a3d...',
+		placeholder: 'e.g. 3a7bd3e2360a3d...',
 		displayOptions: { show: { operation: ['get'], resource: ['sbom', 'vulnerability', 'advisory'] } },
 	},
 

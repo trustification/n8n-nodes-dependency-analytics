@@ -9,7 +9,7 @@ export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemInde
 	const credentialName = chooseCredential(ctx, itemIndex);
 	const base = getBase(ctx, itemIndex);
 	const identifierRaw = (ctx.getNodeParameter('identifier', itemIndex, '') as string).trim();
-	if (!identifierRaw) throwError(ctx.getNode(), 'ID is required in "Get" mode.', itemIndex);
+	if (!identifierRaw) throwError(ctx.getNode(), "The 'Identifier' parameter is required.", itemIndex);
 
 	const options: IHttpRequestOptions = {
 		method: 'GET',
