@@ -57,13 +57,22 @@ export const commonProperties: INodeProperties[] = [
 		description: 'Max number of results to return',
 	},
 	{
-		displayName: 'Simplify',
-		name: 'simplify',
-		type: 'boolean',
-		default: true,
-		description: 'Whether to return a simplified version of the response instead of the raw data',
-		displayOptions: {
-			show: { resource: ['sbom', 'vulnerability', 'advisory'], operation: ['get', 'getMany'] },
-		},
-	},
+    displayName: 'Output',
+    name: 'outputMode',
+    type: 'options',
+    default: 'simplified',
+    description:
+      'How to shape the response. In AI tool mode, keep it small to avoid context issues.',
+    options: [
+      { name: 'Simplified', value: 'simplified' },
+      { name: 'Raw', value: 'raw' },
+      { name: 'Selected Fields', value: 'selected' },
+    ],
+    displayOptions: {
+      show: {
+        operation: ['get', 'getMany'],
+        resource: ['sbom', 'vulnerability', 'advisory'],
+      },
+    },
+  },
 ];
