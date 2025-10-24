@@ -43,7 +43,9 @@ export const commonProperties: INodeProperties[] = [
 		default: '',
 		description: 'The SHA-256 ID or normalized identifier',
 		placeholder: 'e.g. 3a7bd3e2360a3d...',
-		displayOptions: { show: { operation: ['get'], resource: ['sbom', 'vulnerability', 'advisory'] } },
+		displayOptions: {
+			show: { operation: ['get'], resource: ['sbom', 'vulnerability', 'advisory'] },
+		},
 	},
 
 	// common “getMany” params
@@ -53,26 +55,28 @@ export const commonProperties: INodeProperties[] = [
 		type: 'number',
 		default: 50,
 		typeOptions: { minValue: 1 },
-		displayOptions: { show: { operation: ['getMany'], resource: ['sbom', 'vulnerability', 'advisory'] } },
+		displayOptions: {
+			show: { operation: ['getMany'], resource: ['sbom', 'vulnerability', 'advisory'] },
+		},
 		description: 'Max number of results to return',
 	},
 	{
-    displayName: 'Output',
-    name: 'outputMode',
-    type: 'options',
-    default: 'simplified',
-    description:
-      'How to shape the response. In AI tool mode, keep it small to avoid context issues.',
-    options: [
-      { name: 'Simplified', value: 'simplified' },
-      { name: 'Raw', value: 'raw' },
-      { name: 'Selected Fields', value: 'selected' },
-    ],
-    displayOptions: {
-      show: {
-        operation: ['get', 'getMany'],
-        resource: ['sbom', 'vulnerability', 'advisory'],
-      },
-    },
-  },
+		displayName: 'Output',
+		name: 'outputMode',
+		type: 'options',
+		default: 'simplified',
+		description:
+			'How to shape the response. In AI tool mode, keep it small to avoid context issues.',
+		options: [
+			{ name: 'Simplified', value: 'simplified' },
+			{ name: 'Raw', value: 'raw' },
+			{ name: 'Selected Fields', value: 'selected' },
+		],
+		displayOptions: {
+			show: {
+				operation: ['get', 'getMany'],
+				resource: ['sbom', 'vulnerability', 'advisory'],
+			},
+		},
+	},
 ];

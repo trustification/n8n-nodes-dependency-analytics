@@ -9,7 +9,8 @@ export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemInde
 	const credentialName = chooseCredential(ctx, itemIndex);
 	const base = getBase(ctx, itemIndex);
 	const identifierRaw = (ctx.getNodeParameter('identifier', itemIndex, '') as string).trim();
-	if (!identifierRaw) throwError(ctx.getNode(), "The 'Identifier' parameter is required.", itemIndex);
+	if (!identifierRaw)
+		throwError(ctx.getNode(), "The 'Identifier' parameter is required.", itemIndex);
 
 	const normalizedId = /^sha256:/i.test(identifierRaw)
 		? identifierRaw
@@ -46,10 +47,10 @@ export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
 	const rules: SortRule[] = readSortRules(ctx, itemIndex, 'sbom');
 
 	let out = items;
-	if (rules.length) out = [...out].sort((a, b) => multiCmp(a, b, rules, 'sbom'));
+	if (rules.length) out = [...out].sort((a, b) => multiCmp(a, b, rules));
 
 	out = out.slice(0, limit);
 
 	const finalItems = out.map((it) => shapeOutput(ctx, itemIndex, 'sbom', it));
-  return [{ json: { ...res, items: finalItems } }];
+	return [{ json: { ...res, items: finalItems } }];
 }

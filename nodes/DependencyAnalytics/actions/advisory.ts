@@ -9,7 +9,8 @@ export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemInde
 	const credentialName = chooseCredential(ctx, itemIndex);
 	const base = getBase(ctx, itemIndex);
 	const identifierRaw = (ctx.getNodeParameter('identifier', itemIndex, '') as string).trim();
-	if (!identifierRaw) throwError(ctx.getNode(), "The 'Identifier' parameter is required.", itemIndex);
+	if (!identifierRaw)
+		throwError(ctx.getNode(), "The 'Identifier' parameter is required.", itemIndex);
 
 	const options: IHttpRequestOptions = {
 		method: 'GET',
@@ -20,7 +21,6 @@ export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemInde
 
 	const res = await authedRequest(ctx, credentialName, options);
 	return shapeOutput(ctx, itemIndex, 'advisory', res);
-
 }
 
 export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemIndex: number }) {
@@ -41,10 +41,10 @@ export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
 	const rules: SortRule[] = readSortRules(ctx, itemIndex, 'advisory');
 
 	let out = items;
-	if (rules.length) out = [...out].sort((a, b) => multiCmp(a, b, rules, 'advisory'));
+	if (rules.length) out = [...out].sort((a, b) => multiCmp(a, b, rules));
 
 	out = out.slice(0, limit);
 
 	const finalItems = out.map((it) => shapeOutput(ctx, itemIndex, 'advisory', it));
-  return [{ json: { ...res, items: finalItems } }];
+	return [{ json: { ...res, items: finalItems } }];
 }

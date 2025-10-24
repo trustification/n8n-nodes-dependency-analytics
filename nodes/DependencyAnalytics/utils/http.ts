@@ -7,7 +7,9 @@ export function getBase(ctx: IExecuteFunctions, itemIndex: number): string {
 
 export function chooseCredential(ctx: IExecuteFunctions, itemIndex: number): string {
 	const authMethod = ctx.getNodeParameter('authMethod', itemIndex) as string;
-	return authMethod === 'authorizationCode' ? 'trustifyAuthCodeOAuth2Api' : 'trustifyClientOAuth2Api';
+	return authMethod === 'authorizationCode'
+		? 'trustifyAuthCodeOAuth2Api'
+		: 'trustifyClientOAuth2Api';
 }
 
 export async function authedRequest<T = any>(
@@ -18,4 +20,7 @@ export async function authedRequest<T = any>(
 	return ctx.helpers.httpRequestWithAuthentication.call(ctx, credentialName, opts) as Promise<T>;
 }
 
-export const defaultJsonHeaders = { Accept: 'application/json', 'Content-Type': 'application/json' };
+export const defaultJsonHeaders = {
+	Accept: 'application/json',
+	'Content-Type': 'application/json',
+};
