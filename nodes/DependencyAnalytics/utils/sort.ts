@@ -16,7 +16,7 @@ function num(v: unknown): number | null {
 	return Number.isFinite(n) ? n : null;
 }
 
-function cmpField(a: any, b: any, field: string, resource: ResourceKind): number {
+function cmpField(a: any, b: any, field: string): number {
 	// Numeric comparisons
 	if (['number_of_packages', 'size', 'average_score'].includes(field)) {
 		const av = num(a?.[field]);
@@ -41,9 +41,9 @@ function cmpField(a: any, b: any, field: string, resource: ResourceKind): number
 	return av < bv ? -1 : av > bv ? 1 : 0;
 }
 
-export function multiCmp(a: any, b: any, rules: SortRule[], resource: ResourceKind): number {
+export function multiCmp(a: any, b: any, rules: SortRule[]): number {
 	for (const r of rules) {
-		const base = cmpField(a, b, r.field, resource);
+		const base = cmpField(a, b, r.field);
 		if (base !== 0) return r.direction === 'desc' ? -base : base;
 	}
 	return 0;
