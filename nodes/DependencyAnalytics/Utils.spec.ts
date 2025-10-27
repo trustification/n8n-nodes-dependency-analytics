@@ -9,7 +9,7 @@ import {
 } from 'n8n-workflow';
 import { multiCmp, SortRule } from './utils/sort';
 import { readSortRules } from './utils/readSort';
-import { simplifySbom, simplifyVuln, simplifyAdvisory } from './utils/simplify';
+import { simplifyOne, simplifySbom, simplifyVuln, simplifyAdvisory } from './utils/simplify';
 import { parsePurls } from './utils/parsePurls';
 import { getBase, chooseCredential, authedRequest, defaultJsonHeaders } from './utils/http';
 import { readSelectedFields, shapeOutput } from './utils/output';
@@ -277,6 +277,98 @@ describe('Tests for simplify.ts', () => {
 			score: null,
 			size: null,
 			ingested: null,
+		});
+	});
+
+	describe('simplifyOne', () => {
+		test('It should call simplifySbom when resource is sbom', () => {
+			const sbomObj = {
+				id: 'sbom-1',
+				name: 'Test SBOM',
+				described_by: [
+					{
+						name: 'package',
+						version: '1.0.0',
+						purl: [{ purl: 'pkg:npm/test@1.0.0' }],
+					},
+				],
+				number_of_packages: 10,
+			};
+
+			const result = simplifyOne('sbom', sbomObj);
+
+			expect(result).toHaveProperty('id', 'sbom-1');
+			expect(result).toHaveProperty('name', 'Test SBOM');
+			expect(result).toHaveProperty('version', '1.0.0');
+			expect(result).toHaveProperty('packages', 10);
+			expect(result).toHaveProperty('purl', 'pkg:npm/test@1.0.0');
+		});
+
+		test('It should call simplifyVuln when resource is vulnerability', () => {
+			const vulnObj = {
+				identifier: 'CVE-2024-1234',
+				title: 'Test Vulnerability',
+				average_severity: 'critical',
+				average_score: 9.8,
+				cwes: ['CWE-79', 'CWE-89'],
+				advisories: [{}, {}, {}],
+			};
+
+			const result = simplifyOne('vulnerability', vulnObj);
+
+			expect(result).toHaveProperty('identifier', 'CVE-2024-1234');
+			expect(result).toHaveProperty('title', 'Test Vulnerability');
+			expect(result).toHaveProperty('severity', 'critical');
+			expect(result).toHaveProperty('score', 9.8);
+			expect(result).toHaveProperty('cwe', 'CWE-79');
+			expect(result).toHaveProperty('advisories', 3);
+		});
+
+		test('It should call simplifyAdvisory when resource is advisory', () => {
+			const advisoryObj = {
+				document_id: 'doc-123',
+				identifier: 'RHSA-2024-0001',
+				title: 'Security Advisory',
+				issuer: { name: 'Red Hat' },
+				average_severity: 'high',
+				average_score: 7.5,
+				size: 5000,
+			};
+
+			const result = simplifyOne('advisory', advisoryObj);
+
+			expect(result).toHaveProperty('documentId', 'doc-123');
+			expect(result).toHaveProperty('identifier', 'RHSA-2024-0001');
+			expect(result).toHaveProperty('title', 'Security Advisory');
+			expect(result).toHaveProperty('issuer', 'Red Hat');
+			expect(result).toHaveProperty('severity', 'high');
+			expect(result).toHaveProperty('score', 7.5);
+			expect(result).toHaveProperty('size', 5000);
+		});
+
+		test('It should handle empty objects for sbom resource', () => {
+			const result = simplifyOne('sbom', {});
+
+			expect(result).toHaveProperty('id');
+			expect(result).toHaveProperty('name', null);
+			expect(result).toHaveProperty('version', null);
+			expect(result).toHaveProperty('packages', null);
+		});
+
+		test('It should handle empty objects for vulnerability resource', () => {
+			const result = simplifyOne('vulnerability', {});
+
+			expect(result).toHaveProperty('identifier', null);
+			expect(result).toHaveProperty('title', null);
+			expect(result).toHaveProperty('advisories', 0);
+		});
+
+		test('It should handle empty objects for advisory resource', () => {
+			const result = simplifyOne('advisory', {});
+
+			expect(result).toHaveProperty('documentId', null);
+			expect(result).toHaveProperty('identifier', null);
+			expect(result).toHaveProperty('issuer', null);
 		});
 	});
 });
