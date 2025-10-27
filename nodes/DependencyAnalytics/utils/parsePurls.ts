@@ -4,55 +4,55 @@ import { throwError } from './errors';
 const dedupe = (arr: string[]) => Array.from(new Set(arr));
 
 function isStringArray(v: unknown): v is string[] {
-	return Array.isArray(v) && v.every((x) => typeof x === 'string');
+  return Array.isArray(v) && v.every((x) => typeof x === 'string');
 }
 
 export function parsePurls(
-	rawParam: unknown,
-	_ctx: IExecuteFunctions,
-	_itemIndex: number,
+  rawParam: unknown,
+  _ctx: IExecuteFunctions,
+  _itemIndex: number,
 ): string[] {
-	// Case 1: already an array
-	if (isStringArray(rawParam)) {
-		return dedupe(rawParam.map((s) => s.trim()).filter(Boolean));
-	}
+  // Case 1: already an array
+  if (isStringArray(rawParam)) {
+    return dedupe(rawParam.map((s) => s.trim()).filter(Boolean));
+  }
 
-	// Case 2: string input (JSON array or newline-separated)
-	if (typeof rawParam === 'string') {
-		const trimmed = rawParam.trim();
+  // Case 2: string input (JSON array or newline-separated)
+  if (typeof rawParam === 'string') {
+    const trimmed = rawParam.trim();
 
-		// JSON array
-		if (trimmed.startsWith('[')) {
-			const parsed = JSON.parse(trimmed);
-			if (!isStringArray(parsed)) {
-				throwError(_ctx.getNode(), "Provide 'PURLs' as a JSON array of strings.", _itemIndex);
-			}
-			return dedupe(parsed.map((s: any) => s.trim()).filter(Boolean));
-		}
+    // JSON array
+    if (trimmed.startsWith('[')) {
+      const parsed = JSON.parse(trimmed);
+      if (!isStringArray(parsed)) {
+        throwError(_ctx.getNode(), "Provide 'PURLs' as a JSON array of strings.", _itemIndex);
+      }
+      return dedupe(parsed.map((s: any) => s.trim()).filter(Boolean));
+    }
 
-		// newline-separated
-		return dedupe(
-			trimmed
-				.split(/\r?\n/)
-				.map((s) => s.trim())
-				.filter((s) => s && !s.startsWith('#')),
-		);
-	}
+    // newline-separated
+    return dedupe(
+      trimmed
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter((s) => s && !s.startsWith('#')),
+    );
+  }
 
-	// Case 3: object with { purls: [...] }
-	if (rawParam && typeof rawParam === 'object' && 'purls' in (rawParam as any)) {
-		const candidate = (rawParam as { purls: any }).purls;
-		if (!isStringArray(candidate)) {
-			throwError(_ctx.getNode(), "Provide 'purls' as an array of strings.", _itemIndex);
-		}
-		return dedupe(candidate.map((s: any) => s.trim()).filter(Boolean));
-	}
+  // Case 3: object with { purls: [...] }
+  if (rawParam && typeof rawParam === 'object' && 'purls' in (rawParam as any)) {
+    const candidate = (rawParam as { purls: any }).purls;
+    if (!isStringArray(candidate)) {
+      throwError(_ctx.getNode(), "Provide 'purls' as an array of strings.", _itemIndex);
+    }
+    return dedupe(candidate.map((s: any) => s.trim()).filter(Boolean));
+  }
 
-	throwError(
-		_ctx.getNode(),
-		"Provide 'PURLs' as a JSON array, a one-per-line string, or an array expression.",
-		_itemIndex,
-	);
+  throwError(
+    _ctx.getNode(),
+    "Provide 'PURLs' as a JSON array, a one-per-line string, or an array expression.",
+    _itemIndex,
+  );
 
-	return [];
+  return [];
 }
