@@ -1,6 +1,7 @@
 import * as advisory from './actions/advisory';
 import * as sbom from './actions/sbom';
 import * as vulnerability from './actions/vulnerability';
+import { dispatch } from './actions';
 import { authedRequest, chooseCredential, defaultJsonHeaders, getBase } from './utils/http';
 import { multiCmp } from './utils/sort';
 import { readSortRules } from './utils/readSort';
@@ -103,6 +104,20 @@ describe('Tests for actions/advisory.ts', () => {
 
     expect(Array.isArray(result[0].json.items)).toBe(true);
     expect(result[0].json.items).toEqual([]);
+  });
+
+  it('It should throw error if identifier is empty', async () => {
+    ctx.getNodeParameter.mockReturnValueOnce('   ');
+    (throwError as unknown as jest.Mock).mockImplementation(() => {
+      throw new Error('Identifier required');
+    });
+
+    await expect(advisory.get({ ctx, itemIndex: 0 })).rejects.toThrow();
+    expect(throwError).toHaveBeenCalledWith(
+      expect.anything(),
+      "The 'Identifier' parameter is required.",
+      0,
+    );
   });
 });
 
@@ -466,6 +481,97 @@ describe('Tests for actions/vulnerability.ts', () => {
           0,
         );
       });
+    });
+  });
+});
+
+describe('Tests for actions/index.ts', () => {
+  describe('dispatch object structure', () => {
+    it('should have version 2 with all resources and operations', () => {
+      expect(dispatch).toHaveProperty('2');
+      expect(dispatch[2]).toHaveProperty('sbom');
+      expect(dispatch[2]).toHaveProperty('vulnerability');
+      expect(dispatch[2]).toHaveProperty('advisory');
+
+      ['sbom', 'vulnerability', 'advisory'].forEach((resource) => {
+        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty('get');
+        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty('getMany');
+        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty('analyze');
+      });
+    });
+
+    it('should map sbom operations to correct handlers', () => {
+      expect(dispatch[2].sbom.get).toBe(sbom.get);
+      expect(dispatch[2].sbom.getMany).toBe(sbom.getMany);
+      expect(dispatch[2].sbom.analyze).toBeInstanceOf(Function);
+    });
+
+    it('should map vulnerability operations to correct handlers', () => {
+      expect(dispatch[2].vulnerability.get).toBe(vulnerability.get);
+      expect(dispatch[2].vulnerability.getMany).toBe(vulnerability.getMany);
+      expect(dispatch[2].vulnerability.analyze).toBe(vulnerability.analyze);
+    });
+
+    it('should map advisory operations to correct handlers', () => {
+      expect(dispatch[2].advisory.get).toBe(advisory.get);
+      expect(dispatch[2].advisory.getMany).toBe(advisory.getMany);
+      expect(dispatch[2].advisory.analyze).toBeInstanceOf(Function);
+    });
+  });
+
+  describe('unsupported analyze operations', () => {
+    const ctx = {
+      getNode: jest.fn().mockReturnValue({ name: 'TestNode' }),
+    } as any;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should throw error when calling analyze on sbom', async () => {
+      (throwError as unknown as jest.Mock).mockImplementation(() => {
+        throw new Error("The 'Analyze' operation is not available for 'SBOM'.");
+      });
+
+      await expect(dispatch[2].sbom.analyze({ ctx, itemIndex: 0 })).rejects.toThrow(
+        "The 'Analyze' operation is not available for 'SBOM'.",
+      );
+
+      expect(throwError).toHaveBeenCalledWith(
+        { name: 'TestNode' },
+        "The 'Analyze' operation is not available for 'SBOM'.",
+        0,
+      );
+    });
+
+    it('should throw error when calling analyze on advisory', async () => {
+      (throwError as unknown as jest.Mock).mockImplementation(() => {
+        throw new Error("The 'Analyze' operation is not available for 'Advisory'.");
+      });
+
+      await expect(dispatch[2].advisory.analyze({ ctx, itemIndex: 0 })).rejects.toThrow(
+        "The 'Analyze' operation is not available for 'Advisory'.",
+      );
+
+      expect(throwError).toHaveBeenCalledWith(
+        { name: 'TestNode' },
+        "The 'Analyze' operation is not available for 'Advisory'.",
+        0,
+      );
+    });
+
+    it('should throw error with correct itemIndex', async () => {
+      (throwError as unknown as jest.Mock).mockImplementation(() => {
+        throw new Error("The 'Analyze' operation is not available for 'SBOM'.");
+      });
+
+      await expect(dispatch[2].sbom.analyze({ ctx, itemIndex: 5 })).rejects.toThrow();
+
+      expect(throwError).toHaveBeenCalledWith(
+        expect.anything(),
+        "The 'Analyze' operation is not available for 'SBOM'.",
+        5,
+      );
     });
   });
 });
