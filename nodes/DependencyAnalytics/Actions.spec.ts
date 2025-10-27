@@ -494,9 +494,15 @@ describe('Tests for actions/index.ts', () => {
       expect(dispatch[2]).toHaveProperty('advisory');
 
       ['sbom', 'vulnerability', 'advisory'].forEach((resource) => {
-        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty('get');
-        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty('getMany');
-        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty('analyze');
+        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty(
+          'get',
+        );
+        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty(
+          'getMany',
+        );
+        expect(dispatch[2][resource as 'sbom' | 'vulnerability' | 'advisory']).toHaveProperty(
+          'analyze',
+        );
       });
     });
 

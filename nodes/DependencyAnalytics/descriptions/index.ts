@@ -5,8 +5,8 @@ import { vulnerabilityProperties } from './vulnerability.properties';
 import { advisoryProperties } from './advisory.properties';
 
 export const properties: INodeProperties[] = [
-	...commonProperties,
-	...sbomProperties,
-	...vulnerabilityProperties,
-	...advisoryProperties,
+  ...commonProperties,
+  ...sbomProperties,
+  ...vulnerabilityProperties,
+  ...advisoryProperties,
 ];

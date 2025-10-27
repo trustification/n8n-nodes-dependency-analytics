@@ -8,36 +8,36 @@ type Ctx = { ctx: IExecuteFunctions; itemIndex: number };
 type Handler = (args: Ctx) => Promise<INodeExecutionData[] | any>;
 
 export const dispatch: Record<
-	number,
-	Record<'sbom' | 'vulnerability' | 'advisory', Record<'get' | 'getMany' | 'analyze', Handler>>
+  number,
+  Record<'sbom' | 'vulnerability' | 'advisory', Record<'get' | 'getMany' | 'analyze', Handler>>
 > = {
-	2: {
-		sbom: {
-			get: sbom.get,
-			getMany: sbom.getMany,
-			analyze: async ({ ctx, itemIndex }) => {
-				throwError(
-					ctx.getNode(),
-					"The 'Analyze' operation is not available for 'SBOM'.",
-					itemIndex,
-				);
-			},
-		},
-		vulnerability: {
-			get: vulnerability.get,
-			getMany: vulnerability.getMany,
-			analyze: vulnerability.analyze,
-		},
-		advisory: {
-			get: advisory.get,
-			getMany: advisory.getMany,
-			analyze: async ({ ctx, itemIndex }) => {
-				throwError(
-					ctx.getNode(),
-					"The 'Analyze' operation is not available for 'Advisory'.",
-					itemIndex,
-				);
-			},
-		},
-	},
+  2: {
+    sbom: {
+      get: sbom.get,
+      getMany: sbom.getMany,
+      analyze: async ({ ctx, itemIndex }) => {
+        throwError(
+          ctx.getNode(),
+          "The 'Analyze' operation is not available for 'SBOM'.",
+          itemIndex,
+        );
+      },
+    },
+    vulnerability: {
+      get: vulnerability.get,
+      getMany: vulnerability.getMany,
+      analyze: vulnerability.analyze,
+    },
+    advisory: {
+      get: advisory.get,
+      getMany: advisory.getMany,
+      analyze: async ({ ctx, itemIndex }) => {
+        throwError(
+          ctx.getNode(),
+          "The 'Analyze' operation is not available for 'Advisory'.",
+          itemIndex,
+        );
+      },
+    },
+  },
 };
