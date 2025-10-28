@@ -1,59 +1,60 @@
 {
-	"name": "n8n-nodes-dependency-analytics",
-	"version": "0.1.0",
-	"description": "Trustify is an open-source project developed by Red Hat that provides a high-performance, searchable backend for software supply chain metadata. It enables security and development teams to store, query, and analyze data such as Software Bills of Materials (SBOMs), vulnerabilities (CVEs), and vendor advisories in standardized formats like SPDX, CycloneDX, and OSV.\n Integrated into modern CI/CD workflows, Trustify helps organizations improve visibility into their software supply chain, proactively identify risks, and reduce vulnerability management fatigue. As part of the OpenSSF’s GUAC project, Trustify contributes to building a unified, community-driven ecosystem for managing security metadata at scale—making it easier to understand provenance, assess vulnerability impact, and strengthen software resilience.",
-	"keywords": [
-		"n8n-community-node-package"
-	],
-	"license": "MIT",
-	"homepage": "",
-	"author": {
-		"name": "Adva Oren",
-		"email": "aoren@redhat.om"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/trustification/n8n-nodes-dependency-analytics.git"
-	},
-	"engines": {
-		"node": ">=22.15"
-	},
-	"main": "index.js",
-	"scripts": {
-		"build": "npx rimraf dist && tsc && gulp build:icons",
-		"dev": "tsc --watch",
-		"test": "jest",
-		"format": "prettier nodes credentials --write",
-		"lint": "eslint nodes credentials package.json",
-		"lintfix": "eslint nodes credentials package.json --fix",
-		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
-	},
-	"files": [
-		"dist"
-	],
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"credentials": [
-			"dist/credentials/TrustifyClientCred.credentials.js",
-			"dist/credentials/TrustifyAuthCode.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/DependencyAnalytics/DependencyAnalytics.node.js"
-		]
-	},
-	"devDependencies": {
-		"@types/node": "^24.6.2",
-		"@typescript-eslint/parser": "^8.45.0",
-		"eslint": "^8.57.0",
-		"eslint-plugin-n8n-nodes-base": "^1.16.3",
-		"gulp": "^5.0.0",
-		"prettier": "^3.5.3",
-		"typescript": "^5.9.2",
-		"ts-jest": "^29.2.5",
-		"jest": "^30.2.0",
-		"@types/jest": "^30.0.0"
-	},
-	"peerDependencies": {
-		"n8n-workflow": "*"
-	}
+  "name": "n8n-nodes-dependency-analytics",
+  "version": "0.1.0",
+  "description": "Trustify is an open-source project developed by Red Hat that provides a high-performance, searchable backend for software supply chain metadata. It enables security and development teams to store, query, and analyze data such as Software Bills of Materials (SBOMs), vulnerabilities (CVEs), and vendor advisories in standardized formats like SPDX, CycloneDX, and OSV.\n Integrated into modern CI/CD workflows, Trustify helps organizations improve visibility into their software supply chain, proactively identify risks, and reduce vulnerability management fatigue. As part of the OpenSSF’s GUAC project, Trustify contributes to building a unified, community-driven ecosystem for managing security metadata at scale—making it easier to understand provenance, assess vulnerability impact, and strengthen software resilience.",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "author": {
+    "name": "Adva Oren",
+    "email": "aoren@redhat.om"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trustification/n8n-nodes-dependency-analytics.git"
+  },
+  "engines": {
+    "node": ">=22.15"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "npx rimraf dist && tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "lintfix": "eslint --fix .",
+    "prepublishOnly": "npm run build && npm run lint"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/TrustifyClientCred.credentials.js",
+      "dist/credentials/TrustifyAuthCode.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/DependencyAnalytics/DependencyAnalytics.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.2",
+    "@typescript-eslint/parser": "^8.45.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
+    "gulp": "^5.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.9.2",
+    "ts-jest": "^29.2.5",
+    "jest": "^30.2.0",
+    "@types/jest": "^30.0.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
 }

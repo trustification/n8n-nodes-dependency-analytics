@@ -1,0 +1,17 @@
+node_modules
+.git
+dist
+*.svg
+coverage
+.eslintrc.js
+.eslintrc.prepublish.js
+.github
+.prettierrc.js
+.vscode/extensions.json
+CODE_OF_CONDUCT.md
+gulpfile.js
+jest.config.js
+package-lock.json
+README.md
+tsconfig.json
+LICENSE
