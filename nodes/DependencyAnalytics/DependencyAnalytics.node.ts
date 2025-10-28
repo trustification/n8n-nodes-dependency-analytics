@@ -4,10 +4,32 @@ import {
   NodeConnectionType,
   IExecuteFunctions,
   INodeExecutionData,
+  INodeCredentialDescription,
 } from 'n8n-workflow';
 
 import { properties } from './descriptions';
 import { dispatch } from './actions';
+
+const trustifyCredentials: INodeCredentialDescription[] = [
+  {
+    name: 'trustifyClientCredsOAuth2Api',
+    required: true,
+    displayOptions: {
+      show: {
+        authMethod: ['clientCredentials'],
+      },
+    },
+  },
+  {
+    name: 'trustifyAuthCodeOAuth2Api',
+    required: true,
+    displayOptions: {
+      show: {
+        authMethod: ['authorizationCode'],
+      },
+    },
+  },
+];
 
 export class DependencyAnalytics implements INodeType {
   description: INodeTypeDescription = {
@@ -24,29 +46,10 @@ export class DependencyAnalytics implements INodeType {
     inputs: [NodeConnectionType.Main],
     outputs: [NodeConnectionType.Main],
     usableAsTool: true,
-    credentials: [
-      {
-        name: 'trustifyClientOAuth2Api',
-        required: true,
-        displayOptions: {
-          show: {
-            authMethod: ['clientCredentials'],
-          },
-        },
-      },
-      {
-        name: 'trustifyAuthCodeOAuth2Api',
-        required: true,
-        displayOptions: {
-          show: {
-            authMethod: ['authorizationCode'],
-          },
-        },
-      },
-    ],
+    credentials: trustifyCredentials,
     requestDefaults: {
       // baseURL: 'https://server-tpa.apps.tpaqe-1.lab.eng.rdu2.redhat.com',
-      baseURL: 'http://localhost:8080/api/v2/',
+      baseURL: process.env['TRUSTIFY_BASE_URL'] || 'https://rhtpa.stage.redhat.com/api/v2/',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
