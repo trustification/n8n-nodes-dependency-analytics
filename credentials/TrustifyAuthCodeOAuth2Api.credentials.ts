@@ -9,44 +9,48 @@ export class TrustifyAuthCodeOAuth2Api implements ICredentialType {
     {
       displayName: 'Authorization URL',
       name: 'authUrl',
-      type: 'string' as const,
-      default:
-        'https://sso-trustify.apps.cluster.trustification.rocks/realms/chicken/protocol/openid-connect/auth',
+      type: process.env['TRUSTIFY_SSO_URL'] ? ('hidden' as const) : ('string' as const),
+      default: process.env['TRUSTIFY_SSO_URL']
+        ? `${process.env['TRUSTIFY_SSO_URL']}/protocol/openid-connect/auth`
+        : 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/auth',
       description: 'URL where users authorize the application (required for user authentication)',
+      required: true,
     },
     {
       displayName: 'Access Token URL',
       name: 'accessTokenUrl',
-      type: 'string' as const,
-      default:
-        'https://sso-trustify.apps.cluster.trustification.rocks/realms/chicken/protocol/openid-connect/token',
+      type: process.env['TRUSTIFY_SSO_URL'] ? ('hidden' as const) : ('string' as const),
+      default: process.env['TRUSTIFY_SSO_URL']
+        ? `${process.env['TRUSTIFY_SSO_URL']}/protocol/openid-connect/token`
+        : 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token',
       description: 'URL for exchanging credentials for access token',
       required: true,
     },
     {
       displayName: 'Client ID',
       name: 'clientId',
-      type: 'string' as const,
-      default: '',
+      type: process.env['TRUSTIFY_CLIENT_ID'] ? ('hidden' as const) : ('string' as const),
+      default: process.env['TRUSTIFY_CLIENT_ID'] ?? '',
       description: 'OAuth2 client ID',
       required: true,
     },
     {
       displayName: 'Client Secret',
       name: 'clientSecret',
-      type: 'string' as const,
-      typeOptions: { password: true },
-      default: '',
+      type: process.env['TRUSTIFY_CLIENT_SECRET'] ? ('hidden' as const) : ('string' as const),
+      default: process.env['TRUSTIFY_CLIENT_SECRET'] ?? '',
       description: 'OAuth2 client secret',
       required: true,
+      typeOptions: { password: true },
     },
     {
       displayName: 'Scope',
       name: 'scope',
-      type: 'string' as const,
-      default: 'read:document',
-      placeholder: 'e.g. read:document',
+      type: process.env['TRUSTIFY_SCOPE'] ? ('hidden' as const) : ('string' as const),
+      default: process.env['TRUSTIFY_SCOPE'] || 'openid',
       description: 'Scopes to request (space-separated)',
+      required: true,
+      placeholder: 'e.g. openid',
     },
     {
       displayName: 'Grant Type',
