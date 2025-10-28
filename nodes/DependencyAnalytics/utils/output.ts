@@ -27,7 +27,7 @@ function first<T = any>(v: any): T | undefined {
 }
 
 function deriveSbomFields(source: any): any {
-  const described = first(source?.described_by) ?? {};
+ 			 const described = first(source?.described_by) ?? {};
   const firstPurl = first(described?.purl)?.purl;
   const derived = {
     name: source?.name ?? described?.name ?? null,
