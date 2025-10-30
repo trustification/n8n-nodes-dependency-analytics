@@ -99,6 +99,12 @@ echo "Adding confidential client '$CLIENT_NAME' to realm '$REALM'..."
 # Authenticate
 TOKEN=$(authenticate)
 
+# Ensure default client scopes exist prior to applying them
+if [[ -n "$DEFAULT_CLIENT_SCOPES" ]]; then
+    echo "Ensuring default client scopes exist..."
+    ensure_client_scopes "$DEFAULT_CLIENT_SCOPES" "$TOKEN"
+fi
+
 # Check if client already exists
 echo "Checking if client already exists..."
 EXISTING_CLIENT_ID=$(client_exists "$CLIENT_NAME" "$TOKEN")
@@ -137,6 +143,10 @@ EOF
     
     update_client "$EXISTING_CLIENT_ID" "$CLIENT_DATA" "$TOKEN"
     set_client_secret "$EXISTING_CLIENT_ID" "$CLIENT_SECRET" "$TOKEN"
+    # Explicitly link default client scopes to ensure they're applied
+    if [[ -n "$DEFAULT_CLIENT_SCOPES" ]]; then
+        ensure_client_default_scopes "$EXISTING_CLIENT_ID" "$DEFAULT_CLIENT_SCOPES" "$TOKEN"
+    fi
     
     echo "Client updated successfully!"
 else
@@ -192,6 +202,10 @@ EOF
     
     update_client "$CLIENT_ID" "$CLIENT_DATA" "$TOKEN"
     set_client_secret "$CLIENT_ID" "$CLIENT_SECRET" "$TOKEN"
+    # Explicitly link default client scopes to ensure they're applied
+    if [[ -n "$DEFAULT_CLIENT_SCOPES" ]]; then
+        ensure_client_default_scopes "$CLIENT_ID" "$DEFAULT_CLIENT_SCOPES" "$TOKEN"
+    fi
     
     # Add protocol mappers if requested
     if [[ "$ADD_PROTOCOL_MAPPERS" == "true" ]]; then
