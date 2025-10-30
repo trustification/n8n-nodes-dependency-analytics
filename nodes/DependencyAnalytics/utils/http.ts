@@ -9,7 +9,7 @@ export function chooseCredential(ctx: IExecuteFunctions, itemIndex: number): str
   const authMethod = ctx.getNodeParameter('authMethod', itemIndex) as string;
   return authMethod === 'authorizationCode'
     ? 'trustifyAuthCodeOAuth2Api'
-    : 'trustifyClientOAuth2Api';
+    : 'trustifyClientCredsOAuth2Api';
 }
 
 export async function authedRequest<T = any>(
