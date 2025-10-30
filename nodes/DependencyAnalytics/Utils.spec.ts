@@ -436,7 +436,7 @@ describe('Tests for http.ts', () => {
     expect(result).toBe('https://api.foobar.com');
   });
 
-  test('It should return `trustifyClientOAuth2Api`', () => {
+  test('It should return `trustifyClientCredsOAuth2Api`', () => {
     const mockCtx = {
       getNodeParameter: jest.fn().mockReturnValue('clientCredentials'),
     };

@@ -9,36 +9,32 @@ export class TrustifyAuthCodeOAuth2Api implements ICredentialType {
     {
       displayName: 'Authorization URL',
       name: 'authUrl',
-      type: process.env['TRUSTIFY_SSO_URL'] ? ('hidden' as const) : ('string' as const),
-      default: process.env['TRUSTIFY_SSO_URL']
-        ? `${process.env['TRUSTIFY_SSO_URL']}/protocol/openid-connect/auth`
-        : 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/auth',
+      type: 'string' as const,
+      default: 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/auth',
       description: 'URL where users authorize the application (required for user authentication)',
       required: true,
     },
     {
       displayName: 'Access Token URL',
       name: 'accessTokenUrl',
-      type: process.env['TRUSTIFY_SSO_URL'] ? ('hidden' as const) : ('string' as const),
-      default: process.env['TRUSTIFY_SSO_URL']
-        ? `${process.env['TRUSTIFY_SSO_URL']}/protocol/openid-connect/token`
-        : 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token',
+      type: 'string' as const,
+      default: 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token',
       description: 'URL for exchanging credentials for access token',
       required: true,
     },
     {
       displayName: 'Client ID',
       name: 'clientId',
-      type: process.env['TRUSTIFY_CLIENT_ID'] ? ('hidden' as const) : ('string' as const),
-      default: process.env['TRUSTIFY_CLIENT_ID'] ?? '',
+      type: 'string' as const,
       description: 'OAuth2 client ID',
+      default: '',
       required: true,
     },
     {
       displayName: 'Client Secret',
       name: 'clientSecret',
-      type: process.env['TRUSTIFY_CLIENT_SECRET'] ? ('hidden' as const) : ('string' as const),
-      default: process.env['TRUSTIFY_CLIENT_SECRET'] ?? '',
+      type: 'string' as const,
+      default: '',
       description: 'OAuth2 client secret',
       required: true,
       typeOptions: { password: true },
@@ -46,9 +42,9 @@ export class TrustifyAuthCodeOAuth2Api implements ICredentialType {
     {
       displayName: 'Scope',
       name: 'scope',
-      type: process.env['TRUSTIFY_SCOPE'] ? ('hidden' as const) : ('string' as const),
-      default: process.env['TRUSTIFY_SCOPE'] || 'openid',
-      description: 'Scopes to request (space-separated)',
+      type: 'string' as const,
+      default: 'openid',
+      description: 'OAuth2 scopes to request (space-separated)',
       required: true,
       placeholder: 'e.g. openid',
     },
