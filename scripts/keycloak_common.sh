@@ -8,11 +8,19 @@ KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8090}"
 KEYCLOAK_ADMIN="${KEYCLOAK_ADMIN:-admin}"
 KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-admin123456}"
 REALM="${REALM:-trustify}"
+KEYCLOAK_SKIP_SSL="${KEYCLOAK_SKIP_SSL:-false}"
+
+# Build curl SSL option: skip SSL if explicitly set, or if using HTTPS (likely self-signed certs in dev)
+if [[ "$KEYCLOAK_SKIP_SSL" == "true" ]] || [[ "$KEYCLOAK_URL" =~ ^https:// ]]; then
+    CURL_SSL_OPTS="-k"
+else
+    CURL_SSL_OPTS=""
+fi
 
 # Function to get access token
 get_access_token() {
     local response
-    response=$(curl -s -X POST \
+    response=$(curl $CURL_SSL_OPTS -s -X POST \
         "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "username=${KEYCLOAK_ADMIN}" \
@@ -31,13 +39,13 @@ kc_api() {
     local token="$4"
     
     if [[ -n "$data" ]]; then
-        curl -s -X "$method" \
+        curl $CURL_SSL_OPTS -s -X "$method" \
             "${KEYCLOAK_URL}/admin/realms/${REALM}${endpoint}" \
             -H "Authorization: Bearer $token" \
             -H "Content-Type: application/json" \
             -d "$data"
     else
-        curl -s -X "$method" \
+        curl $CURL_SSL_OPTS -s -X "$method" \
             "${KEYCLOAK_URL}/admin/realms/${REALM}${endpoint}" \
             -H "Authorization: Bearer $token"
     fi
@@ -236,7 +244,7 @@ create_client() {
     local client_name="$3"
     
     # Create the client using the working approach
-    local response=$(curl -s -X POST \
+    local response=$(curl $CURL_SSL_OPTS -s -X POST \
         "${KEYCLOAK_URL}/admin/realms/${REALM}/clients" \
         -H "Authorization: Bearer $token" \
         -H "Content-Type: application/json" \
