@@ -19,13 +19,30 @@ Creates a confidential client suitable for n8n when you need user login via Auth
 
 Default configuration includes redirect URIs, web origins for `http://localhost:5678`, and default client scopes.
 
-Run:
+**Configuration via Environment Variables:**
+
+The script automatically reads these environment variables (with defaults if not set):
+- `KEYCLOAK_URL` (default: `http://localhost:8090`)
+- `REALM` (default: `trustify`)
+- `KEYCLOAK_ADMIN` (default: `admin`)
+- `KEYCLOAK_ADMIN_PASSWORD` (default: `admin123456`)
+
+**Usage Examples:**
+
 ```bash
+# Option 1: Export environment variables first (recommended for repeated use)
+export KEYCLOAK_URL=https://sso-tpa.apps.example.com
+export REALM=chicken
+export KEYCLOAK_ADMIN=admin
+export KEYCLOAK_ADMIN_PASSWORD=your-password
+./scripts/create_n8n_authCode.sh
+
+# Option 2: Pass environment variables inline
 KEYCLOAK_URL=http://localhost:8090 \
 REALM=trustify \
 KEYCLOAK_ADMIN=admin \
 KEYCLOAK_ADMIN_PASSWORD=admin123456 \
-./create_n8n_authCode.sh
+./scripts/create_n8n_authCode.sh
 ```
 
 Outputs the client details (client ID, token/authorization endpoints, and scopes).
@@ -34,25 +51,59 @@ Outputs the client details (client ID, token/authorization endpoints, and scopes
 
 Creates a confidential client with service accounts enabled and no browser flows, for machine-to-machine usage by n8n.
 
-Run:
+**Configuration via Environment Variables:**
+
+The script automatically reads these environment variables (with defaults if not set):
+- `KEYCLOAK_URL` (default: `http://localhost:8090`)
+- `REALM` (default: `trustify`)
+- `KEYCLOAK_ADMIN` (default: `admin`)
+- `KEYCLOAK_ADMIN_PASSWORD` (default: `admin123456`)
+
+**Usage Examples:**
+
 ```bash
+# Option 1: Export environment variables first (recommended for repeated use)
+export KEYCLOAK_URL=https://sso-tpa.apps.example.com
+export REALM=chicken
+export KEYCLOAK_ADMIN=admin
+export KEYCLOAK_ADMIN_PASSWORD=your-password
+./scripts/create_n8n_clientCreds.sh
+
+# Option 2: Pass environment variables inline
 KEYCLOAK_URL=http://localhost:8090 \
 REALM=trustify \
 KEYCLOAK_ADMIN=admin \
 KEYCLOAK_ADMIN_PASSWORD=admin123456 \
-./create_n8n_clientCreds.sh
+./scripts/create_n8n_clientCreds.sh
 ```
 
 Outputs the token endpoint, client ID/secret, grant type, and scopes.
 
 ## Configuration Options
 
-### Common Options (Both Scripts)
+### Environment Variables
+
+Both `create_n8n_*.sh` scripts automatically use these environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `KEYCLOAK_URL` | Keycloak base URL | `http://localhost:8090` |
+| `REALM` | Keycloak realm name | `trustify` |
+| `KEYCLOAK_ADMIN` | Admin username | `admin` |
+| `KEYCLOAK_ADMIN_PASSWORD` | Admin password | `admin123456` |
+
+These can be set inline with the command or exported in your shell session.
+
+### Advanced Configuration (add_confidential_client.sh)
+
+The underlying `add_confidential_client.sh` script accepts command-line arguments that override environment variables:
+
+**Common Options:**
 - `--name=CLIENT_NAME` - Client name (required)
-- `--realm=REALM` - Realm name (default: trustify)
-- `--keycloak-url=URL` - Keycloak URL (default: http://localhost:8090)
-- `--admin-user=USER` - Admin username (default: admin)
-- `--admin-password=PASS` - Admin password (default: admin123456)
+- `--realm=REALM` - Realm name (overrides `REALM` env var)
+- `--keycloak-url=URL` - Keycloak URL (overrides `KEYCLOAK_URL` env var)
+- `--admin-user=USER` - Admin username (overrides `KEYCLOAK_ADMIN` env var)
+- `--admin-password=PASS` - Admin password (overrides `KEYCLOAK_ADMIN_PASSWORD` env var)
 - `--defaultClientScopes=SCOPES` - Comma-separated scopes
 - `--protocol-mappers=BOOL` - Add protocol mappers (default: true)
 
@@ -60,10 +111,15 @@ Outputs the token endpoint, client ID/secret, grant type, and scopes.
 - Scopes with colons (e.g., `create:document`) are supported. The scripts ensure scopes exist and link them to the client.
 - Both scripts print devmode hints for `TRUSTD_DEVMODE_ADDITIONAL_CLIENTS`.
 
-### Confidential Client Specific
+**Confidential Client Specific:**
 - `--secret=SECRET` - Client secret (required)
 - `--service-accounts=BOOL` - Enable service accounts (default: false)
 - `--direct-access-grants=BOOL` - Enable direct access grants (default: true)
+- `--standard-flow=BOOL` - Enable authorization code flow (default: true)
+- `--redirect-uris=URIS` - Comma-separated redirect URIs
+- `--web-origins=ORIGINS` - Comma-separated web origins
+
+**Note:** The `create_n8n_*.sh` scripts use environment variables and don't require command-line arguments. Use `add_confidential_client.sh` directly for advanced customization.
 
 ## Examples
 
@@ -73,10 +129,22 @@ export TRUSTD_DEVMODE_ADDITIONAL_CLIENTS="n8n-client-creds,n8n-auth-code"
 cargo run --bin trustd api --devmode --infrastructure-enabled
 ```
 
-### Background Worker
+### Custom Client Configuration
 ```bash
-./add_confidential_client.sh \
+# Using environment variables
+export KEYCLOAK_URL=https://sso-tpa.apps.example.com
+export REALM=myrealm
+./scripts/add_confidential_client.sh \
   --name=worker-service \
+  --secret=worker-secret-456 \
+  --service-accounts=true \
+  --defaultClientScopes=email,profile,roles,read:document
+
+# Or override environment variables with command-line arguments
+./scripts/add_confidential_client.sh \
+  --name=worker-service \
+  --realm=myrealm \
+  --keycloak-url=https://sso-tpa.apps.example.com \
   --secret=worker-secret-456 \
   --service-accounts=true \
   --defaultClientScopes=email,profile,roles,read:document

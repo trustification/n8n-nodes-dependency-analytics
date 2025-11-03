@@ -24,6 +24,8 @@ DIRECT_ACCESS_GRANTS_ENABLED="true"
 REDIRECT_URIS=""
 WEB_ORIGINS=""
 ADD_PROTOCOL_MAPPERS="true"
+# Note: KEYCLOAK_URL, KEYCLOAK_ADMIN, KEYCLOAK_ADMIN_PASSWORD, and REALM
+# are set by keycloak_common.sh from environment variables or defaults
 
 # Parse arguments
 for arg in "$@"; do
