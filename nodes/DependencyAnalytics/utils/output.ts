@@ -65,7 +65,12 @@ export function shapeOutput(ctx: IExecuteFunctions, i: number, resource: Resourc
   }
 
   // selected fields
-  const selected = ensureId(resource, readSelectedFields(ctx, i, resource));
+  let selected = readSelectedFields(ctx, i, resource);
+  // If selecting for advisory but no advisory fields configured, fall back to vulnerability selection
+  if (resource === 'advisory' && (!selected || selected.length === 0)) {
+    selected = readSelectedFields(ctx, i, 'vulnerability');
+  }
+  selected = ensureId(resource, selected);
   const source = resource === 'sbom' ? deriveSbomFields(obj) : obj;
   return project(source, selected);
 }

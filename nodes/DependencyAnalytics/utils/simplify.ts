@@ -41,7 +41,7 @@ export function simplifyVuln(item: Vuln) {
     severity: item.average_severity ?? null,
     score: item.average_score ?? null,
     cwe: first(item.cwes) ?? null,
-    advisories: Array.isArray(item.advisories) ? item.advisories.length : 0,
+    advisories: Array.isArray(item.advisories) ? item.advisories : [],
     reserved: item.reserved ?? null,
     withdrawn: item.withdrawn ?? null,
   };
@@ -49,15 +49,23 @@ export function simplifyVuln(item: Vuln) {
 
 export function simplifyAdvisory(item: Advisory) {
   return {
-    documentId: item.document_id ?? null,
+    uuid: item.uuid ?? null,
     identifier: item.identifier ?? null,
+    document_id: item.document_id ?? null,
     title: item.title ?? null,
-    issuer: item.issuer?.name ?? null,
-    published: item.published ?? null,
-    modified: item.modified ?? null,
-    severity: item.average_severity ?? null,
-    score: item.average_score ?? null,
+    sha256: item.sha256 ?? null,
     size: item.size ?? null,
-    ingested: item.ingested ?? null,
+    average_severity: item.average_severity ?? null,
+    average_score: item.average_score ?? null,
+    vulnerabilities: Array.isArray(item.vulnerabilities)
+      ? item.vulnerabilities.map((v: any) => ({
+          normative: v?.normative ?? null,
+          identifier: v?.identifier ?? null,
+          title: v?.title ?? null,
+          description: v?.description ?? null,
+          severity: v?.severity ?? null,
+          score: v?.score ?? null,
+        }))
+      : [],
   };
 }
