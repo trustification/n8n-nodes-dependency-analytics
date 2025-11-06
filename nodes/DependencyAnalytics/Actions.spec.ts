@@ -342,7 +342,7 @@ describe('Tests for actions/vulnerability.ts', () => {
         const parsedPurls = ['pkg:npm/lodash@4.17.19'];
         (parsePurls as jest.Mock).mockReturnValue(parsedPurls);
 
-        const fakeResult = { vulnerabilities: [{ id: 'CVE-2024-5678' }] };
+        const fakeResult = { advisories: [] };
         (authedRequest as jest.Mock).mockResolvedValue(fakeResult);
 
         const result = await vulnerability.analyze({ ctx, itemIndex: 0 });
@@ -415,13 +415,11 @@ describe('Tests for actions/vulnerability.ts', () => {
 
         const sbomResponse = { id: 'sbom-123' };
         const advisoryResponse = [{ id: 'ADV-1' }];
-
         (authedRequest as jest.Mock)
           .mockResolvedValueOnce(sbomResponse)
           .mockResolvedValueOnce(advisoryResponse);
 
         const result = await vulnerability.analyze({ ctx, itemIndex: 0 });
-
         expect(authedRequest).toHaveBeenNthCalledWith(
           1,
           ctx,
@@ -445,7 +443,7 @@ describe('Tests for actions/vulnerability.ts', () => {
           {
             json: {
               sbomId: 'sbom-123',
-              advisories: advisoryResponse,
+              advisories: [{ shaped: { id: 'ADV-1' } }],
             },
           },
         ]);

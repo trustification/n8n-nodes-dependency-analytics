@@ -17,6 +17,8 @@ export const advisoryProperties: INodeProperties[] = [
       { name: 'Published', value: 'published' },
       { name: 'Size (Bytes)', value: 'size' },
       { name: 'Title', value: 'title' },
+      { name: 'UUID', value: 'uuid' },
+      { name: 'Vulnerabilities', value: 'vulnerabilities' },
     ],
     displayOptions: {
       show: { operation: ['get', 'getMany'], resource: ['advisory'], outputMode: ['selected'] },
@@ -39,5 +41,46 @@ export const advisoryProperties: INodeProperties[] = [
       },
     ],
     default: 'getMany',
+  },
+
+  {
+    displayName: 'Sorting',
+    name: 'sortingAdvisory',
+    type: 'fixedCollection',
+    placeholder: 'Add sort rule',
+    typeOptions: { multipleValues: true },
+    displayOptions: { show: { operation: ['getMany'], resource: ['advisory'] } },
+    default: {},
+    options: [
+      {
+        displayName: 'Sort',
+        name: 'sort',
+        values: [
+          {
+            displayName: 'Field',
+            name: 'field',
+            type: 'options',
+            options: [
+              { name: 'Average Score', value: 'average_score' },
+              { name: 'Average Severity', value: 'average_severity' },
+              { name: 'Identifier', value: 'identifier' },
+              { name: 'Size (Bytes)', value: 'size' },
+              { name: 'Title', value: 'title' },
+            ],
+            default: 'title',
+          },
+          {
+            displayName: 'Direction',
+            name: 'direction',
+            type: 'options',
+            options: [
+              { name: 'Ascending', value: 'asc' },
+              { name: 'Descending', value: 'desc' },
+            ],
+            default: 'desc',
+          },
+        ],
+      },
+    ],
   },
 ];

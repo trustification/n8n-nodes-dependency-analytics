@@ -56,7 +56,7 @@ export const commonProperties: INodeProperties[] = [
     default: 50,
     typeOptions: { minValue: 1 },
     displayOptions: {
-      show: { operation: ['getMany'], resource: ['sbom', 'vulnerability', 'advisory'] },
+      show: { operation: ['getMany', 'analyze'], resource: ['sbom', 'vulnerability', 'advisory'] },
     },
     description: 'Max number of results to return',
   },
@@ -74,7 +74,7 @@ export const commonProperties: INodeProperties[] = [
     ],
     displayOptions: {
       show: {
-        operation: ['get', 'getMany'],
+        operation: ['get', 'getMany', 'analyze'],
         resource: ['sbom', 'vulnerability', 'advisory'],
       },
     },

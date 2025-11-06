@@ -228,7 +228,7 @@ describe('Tests for simplify.ts', () => {
       severity: 'high',
       score: 9.1,
       cwe: 'CWE-79',
-      advisories: 2,
+      advisories: [{}, {}],
       reserved: false,
       withdrawn: false,
     });
@@ -244,7 +244,7 @@ describe('Tests for simplify.ts', () => {
       severity: null,
       score: null,
       cwe: null,
-      advisories: 0,
+      advisories: [],
       reserved: null,
       withdrawn: null,
     });
@@ -265,32 +265,30 @@ describe('Tests for simplify.ts', () => {
     };
     const result = simplifyAdvisory(item);
     expect(result).toEqual({
-      documentId: 'doc-1',
+      uuid: null,
       identifier: 'ADV-001',
+      document_id: 'doc-1',
       title: 'Advisory title',
-      issuer: 'SecurityTeam',
-      published: '2024-01-01',
-      modified: '2024-01-02',
-      severity: 'medium',
-      score: 5.4,
+      sha256: null,
       size: 1234,
-      ingested: '2024-02-01',
+      average_severity: 'medium',
+      average_score: 5.4,
+      vulnerabilities: [],
     });
   });
 
   test('It should handle missing issuer and optional fields', () => {
     const result = simplifyAdvisory({ identifier: 'ADV-002' });
     expect(result).toMatchObject({
-      documentId: null,
+      uuid: null,
       identifier: 'ADV-002',
+      document_id: null,
       title: null,
-      issuer: null,
-      published: null,
-      modified: null,
-      severity: null,
-      score: null,
+      sha256: null,
       size: null,
-      ingested: null,
+      average_severity: null,
+      average_score: null,
+      vulnerabilities: [],
     });
   });
 
@@ -329,13 +327,11 @@ describe('Tests for simplify.ts', () => {
       };
 
       const result = simplifyOne('vulnerability', vulnObj);
-
       expect(result).toHaveProperty('identifier', 'CVE-2024-1234');
       expect(result).toHaveProperty('title', 'Test Vulnerability');
       expect(result).toHaveProperty('severity', 'critical');
       expect(result).toHaveProperty('score', 9.8);
       expect(result).toHaveProperty('cwe', 'CWE-79');
-      expect(result).toHaveProperty('advisories', 3);
     });
 
     test('It should call simplifyAdvisory when resource is advisory', () => {
@@ -350,13 +346,11 @@ describe('Tests for simplify.ts', () => {
       };
 
       const result = simplifyOne('advisory', advisoryObj);
-
-      expect(result).toHaveProperty('documentId', 'doc-123');
+      expect(result).toHaveProperty('document_id', 'doc-123');
       expect(result).toHaveProperty('identifier', 'RHSA-2024-0001');
       expect(result).toHaveProperty('title', 'Security Advisory');
-      expect(result).toHaveProperty('issuer', 'Red Hat');
-      expect(result).toHaveProperty('severity', 'high');
-      expect(result).toHaveProperty('score', 7.5);
+      expect(result).toHaveProperty('average_severity', 'high');
+      expect(result).toHaveProperty('average_score', 7.5);
       expect(result).toHaveProperty('size', 5000);
     });
 
@@ -371,18 +365,18 @@ describe('Tests for simplify.ts', () => {
 
     test('It should handle empty objects for vulnerability resource', () => {
       const result = simplifyOne('vulnerability', {});
-
       expect(result).toHaveProperty('identifier', null);
       expect(result).toHaveProperty('title', null);
-      expect(result).toHaveProperty('advisories', 0);
+      expect(result).toHaveProperty('advisories', []);
     });
 
     test('It should handle empty objects for advisory resource', () => {
       const result = simplifyOne('advisory', {});
-
-      expect(result).toHaveProperty('documentId', null);
+      expect(result).toHaveProperty('document_id', null);
       expect(result).toHaveProperty('identifier', null);
-      expect(result).toHaveProperty('issuer', null);
+      expect(result).toHaveProperty('average_severity', null);
+      expect(result).toHaveProperty('average_score', null);
+      expect(result).toHaveProperty('vulnerabilities', []);
     });
   });
 });
@@ -447,7 +441,7 @@ describe('Tests for http.ts', () => {
       getNodeParameter: jest.fn().mockReturnValue('clientCredentials'),
     };
     const result = chooseCredential(mockCtx as any, 1);
-    expect(result).toBe('trustifyClientOAuth2Api');
+    expect(result).toBe('trustifyClientCredsOAuth2Api');
   });
 
   test('It should simulate authedRequest call', async () => {
