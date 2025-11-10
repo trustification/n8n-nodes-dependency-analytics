@@ -47,6 +47,7 @@ export const sbomProperties: INodeProperties[] = [
     name: 'sortingSbom',
     type: 'fixedCollection',
     placeholder: 'Add sort rule',
+    description: 'Add one or more sorting rules to order the SBOMs',
     typeOptions: { multipleValues: true },
     displayOptions: { show: { operation: ['getMany'], resource: ['sbom'] } },
     default: {},
@@ -59,6 +60,7 @@ export const sbomProperties: INodeProperties[] = [
             displayName: 'Field',
             name: 'field',
             type: 'options',
+            description: 'Property to sort by',
             options: [
               { name: 'Name', value: 'name' },
               { name: 'Packages (Count)', value: 'number_of_packages' },
@@ -70,6 +72,7 @@ export const sbomProperties: INodeProperties[] = [
             displayName: 'Direction',
             name: 'direction',
             type: 'options',
+            description: 'Sort order',
             options: [
               { name: 'Ascending', value: 'asc' },
               { name: 'Descending', value: 'desc' },

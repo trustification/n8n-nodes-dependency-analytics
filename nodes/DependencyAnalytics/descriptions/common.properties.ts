@@ -32,6 +32,8 @@ export const commonProperties: INodeProperties[] = [
       { name: 'Advisory', value: 'advisory' },
     ],
     default: 'vulnerability',
+    description:
+      'Choose which Trustify resource to work with. This affects available operations and fields.',
   },
 
   // common “get” param
@@ -41,8 +43,8 @@ export const commonProperties: INodeProperties[] = [
     type: 'string',
     required: true,
     default: '',
-    description: 'The SHA-256 ID or normalized identifier',
-    placeholder: 'e.g. 3a7bd3e2360a3d...',
+    description: 'SHA ID (sha256|sha384|sha512) or a normalized identifier',
+    placeholder: 'e.g. sha256:3a7bd3e2360a3d…, CVE-2024-1234',
     displayOptions: {
       show: { operation: ['get'], resource: ['sbom', 'vulnerability', 'advisory'] },
     },

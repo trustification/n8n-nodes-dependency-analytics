@@ -32,7 +32,7 @@ test('It contains all expected displayNames in properties', () => {
     'Operation',
     'Input Type',
     'PURLs',
-    'SBOM SHA-256',
+    'SBOM SHA',
     'Sorting',
     'Selected Fields',
     'Operation',
