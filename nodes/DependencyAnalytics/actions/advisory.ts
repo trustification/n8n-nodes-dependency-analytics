@@ -12,6 +12,20 @@ export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemInde
   if (!identifierRaw)
     throwError(ctx.getNode(), "The 'Identifier' parameter is required.", itemIndex);
 
+  // If a bare SHA digest is provided without a sha* prefix, instruct the user to add it
+  if (
+    (/^[a-f0-9]{64}$/i.test(identifierRaw) ||
+      /^[a-f0-9]{96}$/i.test(identifierRaw) ||
+      /^[a-f0-9]{128}$/i.test(identifierRaw)) &&
+    !/^sha(?:256|384|512):/i.test(identifierRaw)
+  ) {
+    throwError(
+      ctx.getNode(),
+      "Provide 'SBOM SHA' with a prefix: sha256:, sha384:, or sha512:.",
+      itemIndex,
+    );
+  }
+
   const options: IHttpRequestOptions = {
     method: 'GET',
     url: `${base}/advisory/${encodeURIComponent(identifierRaw)}`,

@@ -6,6 +6,7 @@ export const advisoryProperties: INodeProperties[] = [
     name: 'advisorySelectedFields',
     type: 'multiOptions',
     default: [],
+    description: "Fields to include when 'Selected Fields' output mode is selected",
     options: [
       { name: 'Average Score', value: 'average_score' },
       { name: 'Average Severity', value: 'average_severity' },
@@ -48,6 +49,7 @@ export const advisoryProperties: INodeProperties[] = [
     name: 'sortingAdvisory',
     type: 'fixedCollection',
     placeholder: 'Add sort rule',
+    description: 'Add one or more sorting rules to order the advisories',
     typeOptions: { multipleValues: true },
     displayOptions: { show: { operation: ['getMany'], resource: ['advisory'] } },
     default: {},
@@ -60,6 +62,7 @@ export const advisoryProperties: INodeProperties[] = [
             displayName: 'Field',
             name: 'field',
             type: 'options',
+            description: 'Property to sort by',
             options: [
               { name: 'Average Score', value: 'average_score' },
               { name: 'Average Severity', value: 'average_severity' },
@@ -73,6 +76,7 @@ export const advisoryProperties: INodeProperties[] = [
             displayName: 'Direction',
             name: 'direction',
             type: 'options',
+            description: 'Sort order',
             options: [
               { name: 'Ascending', value: 'asc' },
               { name: 'Descending', value: 'desc' },

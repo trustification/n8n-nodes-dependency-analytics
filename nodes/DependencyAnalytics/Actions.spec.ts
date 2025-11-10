@@ -409,9 +409,11 @@ describe('Tests for actions/vulnerability.ts', () => {
       });
     });
 
-    describe('inputType: sbomSha256', () => {
-      it('It should analyze vulnerabilities by SBOM SHA256', async () => {
-        ctx.getNodeParameter.mockReturnValueOnce('sbomSha256').mockReturnValueOnce('abc123def456');
+    describe('inputType: sbomSha', () => {
+      it('It should analyze vulnerabilities by SBOM SHA (prefixed)', async () => {
+        ctx.getNodeParameter
+          .mockReturnValueOnce('sbomSha')
+          .mockReturnValueOnce('sha256:abc123def456');
 
         const sbomResponse = { id: 'sbom-123' };
         const advisoryResponse = [{ id: 'ADV-1' }];
@@ -426,8 +428,7 @@ describe('Tests for actions/vulnerability.ts', () => {
           fakeCredential,
           expect.objectContaining({
             method: 'GET',
-            url: `${fakeBase}/sbom/sha256:abc123def456`,
-            qs: { query: 'abc123def456' },
+            url: `${fakeBase}/sbom/${encodeURIComponent('sha256:abc123def456')}`,
           }),
         );
         expect(authedRequest).toHaveBeenNthCalledWith(
@@ -450,22 +451,22 @@ describe('Tests for actions/vulnerability.ts', () => {
       });
 
       it('It should throw error if SBOM SHA256 is empty', async () => {
-        ctx.getNodeParameter.mockReturnValueOnce('sbomSha256').mockReturnValueOnce('  ');
+        ctx.getNodeParameter.mockReturnValueOnce('sbomSha').mockReturnValueOnce('  ');
 
         (throwError as unknown as jest.Mock).mockImplementation(() => {
-          throw new Error('SHA256 required');
+          throw new Error('SBOM SHA required');
         });
 
         await expect(vulnerability.analyze({ ctx, itemIndex: 0 })).rejects.toThrow();
         expect(throwError).toHaveBeenCalledWith(
           expect.anything(),
-          "The 'SBOM SHA-256' parameter is required.",
+          "The 'SBOM SHA' parameter is required.",
           0,
         );
       });
 
       it('It should throw error if SBOM not found', async () => {
-        ctx.getNodeParameter.mockReturnValueOnce('sbomSha256').mockReturnValueOnce('nonexistent');
+        ctx.getNodeParameter.mockReturnValueOnce('sbomSha').mockReturnValueOnce('sha256:abc123');
 
         (authedRequest as jest.Mock).mockResolvedValueOnce({});
         (throwError as unknown as jest.Mock).mockImplementation(() => {
@@ -475,7 +476,7 @@ describe('Tests for actions/vulnerability.ts', () => {
         await expect(vulnerability.analyze({ ctx, itemIndex: 0 })).rejects.toThrow();
         expect(throwError).toHaveBeenCalledWith(
           expect.anything(),
-          "No SBOM found for the provided value in 'SBOM SHA-256'.",
+          "No SBOM found for the provided value in 'SBOM SHA'.",
           0,
         );
       });
