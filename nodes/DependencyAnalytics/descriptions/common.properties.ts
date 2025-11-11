@@ -1,25 +1,34 @@
 import type { INodeProperties } from 'n8n-workflow';
 
 export const commonProperties: INodeProperties[] = [
+
   {
     displayName: 'Authentication Method',
     name: 'authMethod',
     type: 'options',
     options: [
-      { name: 'Authorization Code', value: 'authorizationCode' },
-      { name: 'Client Credentials', value: 'clientCredentials' },
+      { name: 'Trustify Authorization Code', value: 'trustifyAuthorizationCode' },
+      { name: 'Trustify Client Credentials', value: 'trustifyClientCredentials' },
+      { name: 'RHTPA Authorization Code', value: 'rhtpaAuthorizationCode' },
+      { name: 'RHTPA Client Credentials', value: 'rhtpaClientCredentials' },
     ],
-    default: 'authorizationCode',
-    description: 'Choose how to authenticate to Trustify API',
+    default: 'rhtpaClientCredentials',
+    description: 'Choose how to authenticate to the API',
+    required: true,
   },
   {
     displayName: 'Base URL',
     name: 'baseURL',
     type: 'string',
     default: 'http://localhost:8080/api/v2/',
-    placeholder: 'e.g. https://your-trustify-instance.com/api/v2/',
+    placeholder: 'e.g. http://localhost:8080/api/v2/',
     description: 'The base URL for your Trustify API instance',
     required: true,
+    displayOptions: {
+      show: {
+        authMethod: ['trustifyAuthorizationCode', 'trustifyClientCredentials'],
+      },
+    },
   },
   {
     displayName: 'Resource',

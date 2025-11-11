@@ -10,13 +10,13 @@ import {
 import { properties } from './descriptions';
 import { dispatch } from './actions';
 
-const trustifyCredentials: INodeCredentialDescription[] = [
+const credentials: INodeCredentialDescription[] = [
   {
     name: 'trustifyClientCredsOAuth2Api',
     required: true,
     displayOptions: {
       show: {
-        authMethod: ['clientCredentials'],
+        authMethod: ['trustifyClientCredentials'],
       },
     },
   },
@@ -25,7 +25,25 @@ const trustifyCredentials: INodeCredentialDescription[] = [
     required: true,
     displayOptions: {
       show: {
-        authMethod: ['authorizationCode'],
+        authMethod: ['trustifyAuthorizationCode'],
+      },
+    },
+  },
+  {
+    name: 'rhtpaClientCredsOAuth2Api',
+    required: true,
+    displayOptions: {
+      show: {
+        authMethod: ['rhtpaClientCredentials'],
+      },
+    },
+  },
+  {
+    name: 'rhtpaAuthCodeOAuth2Api',
+    required: true,
+    displayOptions: {
+      show: {
+        authMethod: ['rhtpaAuthorizationCode'],
       },
     },
   },
@@ -46,10 +64,9 @@ export class DependencyAnalytics implements INodeType {
     inputs: [NodeConnectionType.Main],
     outputs: [NodeConnectionType.Main],
     usableAsTool: true,
-    credentials: trustifyCredentials,
+    credentials: credentials,
     requestDefaults: {
-      // baseURL: 'https://server-tpa.apps.tpaqe-1.lab.eng.rdu2.redhat.com',
-      baseURL: process.env['TRUSTIFY_BASE_URL'] || 'https://rhtpa.stage.redhat.com/api/v2/',
+      baseURL: 'https://rhtpa.stage.redhat.com/api/v2/',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',

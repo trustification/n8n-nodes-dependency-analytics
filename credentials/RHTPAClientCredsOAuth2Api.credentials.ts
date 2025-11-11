@@ -1,23 +1,15 @@
 import { ICredentialType, INodeProperties } from 'n8n-workflow';
 
-export class TrustifyAuthCodeOAuth2Api implements ICredentialType {
-  name = 'trustifyAuthCodeOAuth2Api';
-  displayName = 'Trustify (Authorization Code) OAuth2 API';
+export class RHTPAClientCredsOAuth2Api implements ICredentialType {
+  name = 'rhtpaClientCredsOAuth2Api';
+  displayName = 'Red Hat Trusted Profile Analyzer (Client Credentials) OAuth2 API';
   documentationUrl = 'https://access.redhat.com/products/red-hat-trusted-profile-analyzer';
   extends = ['oAuth2Api'];
   properties: INodeProperties[] = [
     {
-      displayName: 'Authorization URL',
-      name: 'authUrl',
-      type: 'string' as const,
-      default: 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/auth',
-      description: 'URL where users authorize the application (required for user authentication)',
-      required: true,
-    },
-    {
       displayName: 'Access Token URL',
       name: 'accessTokenUrl',
-      type: 'string' as const,
+      type: 'hidden' as const,
       default: 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token',
       description: 'URL for exchanging credentials for access token',
       required: true,
@@ -26,8 +18,8 @@ export class TrustifyAuthCodeOAuth2Api implements ICredentialType {
       displayName: 'Client ID',
       name: 'clientId',
       type: 'string' as const,
-      description: 'OAuth2 client ID',
       default: '',
+      description: 'OAuth2 client ID',
       required: true,
     },
     {
@@ -42,7 +34,7 @@ export class TrustifyAuthCodeOAuth2Api implements ICredentialType {
     {
       displayName: 'Scope',
       name: 'scope',
-      type: 'string' as const,
+      type: 'hidden' as const,
       default: 'openid',
       description: 'OAuth2 scopes to request (space-separated)',
       required: true,
@@ -52,7 +44,7 @@ export class TrustifyAuthCodeOAuth2Api implements ICredentialType {
       displayName: 'Grant Type',
       name: 'grantType',
       type: 'hidden' as const,
-      default: 'authorizationCode',
+      default: 'clientCredentials',
     },
     {
       displayName: 'Authentication',
