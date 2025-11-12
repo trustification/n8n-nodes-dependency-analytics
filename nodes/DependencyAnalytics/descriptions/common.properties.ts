@@ -1,7 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 
 export const commonProperties: INodeProperties[] = [
-
   {
     displayName: 'Authentication Method',
     name: 'authMethod',

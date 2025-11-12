@@ -17,8 +17,14 @@ describe('Tests for common.properties.ts', () => {
     expect(authMethod?.options).toHaveLength(2);
     expect(authMethod?.options).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ name: 'Trustify Client Credentials', value: 'trustifyClientCredentials' }),
-        expect.objectContaining({ name: 'RHTPA Client Credentials', value: 'rhtpaClientCredentials' }),
+        expect.objectContaining({
+          name: 'Trustify Client Credentials',
+          value: 'trustifyClientCredentials',
+        }),
+        expect.objectContaining({
+          name: 'RHTPA Client Credentials',
+          value: 'rhtpaClientCredentials',
+        }),
       ]),
     );
     expect(authMethod?.default).toBe('rhtpaClientCredentials');

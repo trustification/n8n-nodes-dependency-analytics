@@ -424,7 +424,11 @@ describe('Tests for http.ts', () => {
       getNodeParameter: jest.fn().mockReturnValue('https://api.foobar.com///'),
     };
     const result = getBase(mockCtx as any, 0);
-    expect(mockCtx.getNodeParameter).toHaveBeenCalledWith('baseURL', 0, 'https://rhtpa.stage.devshift.net/api/v2/');
+    expect(mockCtx.getNodeParameter).toHaveBeenCalledWith(
+      'baseURL',
+      0,
+      'https://rhtpa.stage.devshift.net/api/v2/',
+    );
     expect(result).toBe('https://api.foobar.com');
   });
 

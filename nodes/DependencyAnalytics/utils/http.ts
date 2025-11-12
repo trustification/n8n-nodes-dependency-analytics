@@ -1,7 +1,11 @@
 import type { IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
 
 export function getBase(ctx: IExecuteFunctions, itemIndex: number): string {
-  let baseURLRaw = ctx.getNodeParameter('baseURL', itemIndex, 'https://rhtpa.stage.devshift.net/api/v2/') as string;
+  let baseURLRaw = ctx.getNodeParameter(
+    'baseURL',
+    itemIndex,
+    'https://rhtpa.stage.devshift.net/api/v2/',
+  ) as string;
   return baseURLRaw.replace(/\/+$/, '');
 }
 
