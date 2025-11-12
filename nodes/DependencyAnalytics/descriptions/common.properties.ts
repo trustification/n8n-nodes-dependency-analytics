@@ -7,9 +7,7 @@ export const commonProperties: INodeProperties[] = [
     name: 'authMethod',
     type: 'options',
     options: [
-      { name: 'Trustify Authorization Code', value: 'trustifyAuthorizationCode' },
       { name: 'Trustify Client Credentials', value: 'trustifyClientCredentials' },
-      { name: 'RHTPA Authorization Code', value: 'rhtpaAuthorizationCode' },
       { name: 'RHTPA Client Credentials', value: 'rhtpaClientCredentials' },
     ],
     default: 'rhtpaClientCredentials',
@@ -26,7 +24,7 @@ export const commonProperties: INodeProperties[] = [
     required: true,
     displayOptions: {
       show: {
-        authMethod: ['trustifyAuthorizationCode', 'trustifyClientCredentials'],
+        authMethod: ['trustifyClientCredentials'],
       },
     },
   },

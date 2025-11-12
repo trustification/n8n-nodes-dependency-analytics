@@ -21,29 +21,11 @@ const credentials: INodeCredentialDescription[] = [
     },
   },
   {
-    name: 'trustifyAuthCodeOAuth2Api',
-    required: true,
-    displayOptions: {
-      show: {
-        authMethod: ['trustifyAuthorizationCode'],
-      },
-    },
-  },
-  {
     name: 'rhtpaClientCredsOAuth2Api',
     required: true,
     displayOptions: {
       show: {
         authMethod: ['rhtpaClientCredentials'],
-      },
-    },
-  },
-  {
-    name: 'rhtpaAuthCodeOAuth2Api',
-    required: true,
-    displayOptions: {
-      show: {
-        authMethod: ['rhtpaAuthorizationCode'],
       },
     },
   },

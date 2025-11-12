@@ -424,7 +424,7 @@ describe('Tests for http.ts', () => {
       getNodeParameter: jest.fn().mockReturnValue('https://api.foobar.com///'),
     };
     const result = getBase(mockCtx as any, 0);
-    expect(mockCtx.getNodeParameter).toHaveBeenCalledWith('baseURL', 0);
+    expect(mockCtx.getNodeParameter).toHaveBeenCalledWith('baseURL', 0, 'https://rhtpa.stage.devshift.net/api/v2/');
     expect(result).toBe('https://api.foobar.com');
   });
 
@@ -438,7 +438,7 @@ describe('Tests for http.ts', () => {
 
   test('It should return `trustifyClientCredsOAuth2Api`', () => {
     const mockCtx = {
-      getNodeParameter: jest.fn().mockReturnValue('clientCredentials'),
+      getNodeParameter: jest.fn().mockReturnValue('trustifyClientCredentials'),
     };
     const result = chooseCredential(mockCtx as any, 1);
     expect(result).toBe('trustifyClientCredsOAuth2Api');

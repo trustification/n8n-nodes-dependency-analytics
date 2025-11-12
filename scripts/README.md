@@ -13,41 +13,7 @@ The scripts provide instructions for using new clients in devmode development. S
 
 ## Available Scripts
 
-### 1. `create_n8n_authCode.sh` – Confidential client for Authorization Code
-
-Creates a confidential client suitable for n8n when you need user login via Authorization Code flow.
-
-Default configuration includes redirect URIs, web origins for `http://localhost:5678`, and default client scopes.
-
-**Configuration via Environment Variables:**
-
-The script automatically reads these environment variables (with defaults if not set):
-- `KEYCLOAK_URL` (default: `http://localhost:8090`)
-- `REALM` (default: `trustify`)
-- `KEYCLOAK_ADMIN` (default: `admin`)
-- `KEYCLOAK_ADMIN_PASSWORD` (default: `admin123456`)
-
-**Usage Examples:**
-
-```bash
-# Option 1: Export environment variables first (recommended for repeated use)
-export KEYCLOAK_URL=https://sso-tpa.apps.example.com
-export REALM=chicken
-export KEYCLOAK_ADMIN=admin
-export KEYCLOAK_ADMIN_PASSWORD=your-password
-./scripts/create_n8n_authCode.sh
-
-# Option 2: Pass environment variables inline
-KEYCLOAK_URL=http://localhost:8090 \
-REALM=trustify \
-KEYCLOAK_ADMIN=admin \
-KEYCLOAK_ADMIN_PASSWORD=admin123456 \
-./scripts/create_n8n_authCode.sh
-```
-
-Outputs the client details (client ID, token/authorization endpoints, and scopes).
-
-### 2. `create_n8n_clientCreds.sh` – Confidential client for Client Credentials
+### 1. `create_n8n_clientCreds.sh` – Confidential client for Client Credentials
 
 Creates a confidential client with service accounts enabled and no browser flows, for machine-to-machine usage by n8n.
 

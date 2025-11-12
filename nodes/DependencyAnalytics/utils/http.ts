@@ -8,12 +8,8 @@ export function getBase(ctx: IExecuteFunctions, itemIndex: number): string {
 export function chooseCredential(ctx: IExecuteFunctions, itemIndex: number): string {
   const authMethod = ctx.getNodeParameter('authMethod', itemIndex) as string;
   switch (authMethod) {
-    case 'rhtpaAuthorizationCode':
-      return 'rhtpaAuthCodeOAuth2Api';
     case 'rhtpaClientCredentials':
       return 'rhtpaClientCredsOAuth2Api';
-    case 'trustifyAuthorizationCode':
-      return 'trustifyAuthCodeOAuth2Api';
     case 'trustifyClientCredentials':
       return 'trustifyClientCredsOAuth2Api';
     default:
