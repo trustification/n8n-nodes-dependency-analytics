@@ -51,60 +51,25 @@ This node currently supports the following operations:
 
 ## Credentials
 
-This node supports two OAuth2 credential types for authenticating with Red Hat Dependency Analytics:
+This node supports Client Credentials OAuth2 type for authenticating with Red Hat Dependency Analytics.
 
-### 1. Trustify (Authorization Code - User Authentication) OAuth2 API
+### RHTPA Client Credentials
 
-**Purpose:** User authentication flow where individual users authenticate through Red Hat SSO. This is ideal for interactive workflows where users need to authenticate themselves.
+- Use when connecting to RHTPA cloud services
+- Required parameters: (Provided by the RHTPA team upon request)
+  - Client ID
+  - Client Secret
 
-**Configuration:**
-- **Authorization URL:** `https://sso.example.com/auth/realms/trustify/protocol/openid-connect/auth`
-- **Access Token URL:** `https://sso.example.com/auth/realms/trustify/protocol/openid-connect/token`
-- **Grant Type:** `authorizationCode`
-- **Authentication:** `header`
+### Trustify Client Credentials
 
-### 2. Trustify Client Credentials (Machine-to-Machine) OAuth2 API
+- Use when connecting to:
+  - On premise Trustify instance
+  - Local development
+- It requires that in your SSO provider a confidential client exists
+  - The Trustify instance accepts this client id
+  - The Trustify instance can map the client or scope to the necessary permissions
 
-**Purpose:** Machine-to-machine authentication using client credentials. This is ideal for automated workflows, CI/CD pipelines, and server-to-server communication where no user interaction is required.
-
-**Configuration:**
-- **Access Token URL:** `https://sso.example.com/auth/realms/trustify/protocol/openid-connect/token`
-- **Grant Type:** `clientCredentials`
-- **Authentication:** `header`
-
-### Environment Variables
-
-Both credential types support the following environment variables for configuration:
-
-| Environment Variable | Description | Default Value |
-|---------------------|-------------|---------------|
-| `TRUSTIFY_SSO_URL` | Base SSO URL (suffixed with `/protocol/openid-connect/auth` and `/protocol/openid-connect/token`) | `https://sso.example.com/auth/realms/trustify` |
-| `TRUSTIFY_CLIENT_ID` | OAuth2 client ID | Empty string |
-| `TRUSTIFY_CLIENT_SECRET` | OAuth2 client secret | Empty string |
-| `TRUSTIFY_SCOPE` | OAuth2 scopes (space-separated) | `openid` |
-
-**Note:** When `TRUSTIFY_SSO_URL` is defined, it automatically generates:
-- Authorization URL: `${TRUSTIFY_SSO_URL}/protocol/openid-connect/auth`
-- Access Token URL: `${TRUSTIFY_SSO_URL}/protocol/openid-connect/token`
-
-### Environment Variable Behavior
-
-- **When defined:** The corresponding credential field becomes hidden in the n8n UI and uses the environment variable value
-- **When not defined:** The credential field is visible in the n8n UI and can be configured manually
-
-### Choosing Between Credential Types
-
-- **Use Authorization Code OAuth2** when:
-  - Users need to authenticate individually
-  - Interactive workflows requiring user consent
-  - Personal or user-specific data access
-
-- **Use Client Credentials OAuth2** when:
-  - Automated workflows and CI/CD pipelines
-  - Server-to-server communication
-  - No user interaction required
-  - Service account authentication
-
+For more information refer to the [Trustify - OIDC Docs](https://github.com/guacsec/trustify/blob/main/docs/oidc.md)
 
 ## Compatibility
 

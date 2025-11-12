@@ -1,15 +1,15 @@
 import { ICredentialType, INodeProperties } from 'n8n-workflow';
 
-export class TrustifyClientCredsOAuth2Api implements ICredentialType {
-  name = 'trustifyClientCredsOAuth2Api';
-  displayName = 'Trustify (Client Credentials) OAuth2 API';
+export class RHTPAClientCredsOAuth2Api implements ICredentialType {
+  name = 'rhtpaClientCredsOAuth2Api';
+  displayName = 'Red Hat Trusted Profile Analyzer (Client Credentials) OAuth2 API';
   documentationUrl = 'https://access.redhat.com/products/red-hat-trusted-profile-analyzer';
   extends = ['oAuth2Api'];
   properties: INodeProperties[] = [
     {
       displayName: 'Access Token URL',
       name: 'accessTokenUrl',
-      type: 'string' as const,
+      type: 'hidden' as const,
       default: 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token',
       description: 'URL for exchanging credentials for access token',
       required: true,
@@ -34,7 +34,7 @@ export class TrustifyClientCredsOAuth2Api implements ICredentialType {
     {
       displayName: 'Scope',
       name: 'scope',
-      type: 'string' as const,
+      type: 'hidden' as const,
       default: 'openid',
       description: 'OAuth2 scopes to request (space-separated)',
       required: true,

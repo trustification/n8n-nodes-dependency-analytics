@@ -1,6 +1,6 @@
 # Keycloak Client Management Scripts
 
-This directory contains scripts for managing Keycloak clients using the HTTP API. The scripts follow OAuth2/OIDC security best practices by separating user authentication from service-to-service authentication.
+This directory contains scripts for creating Keycloak clients for n8n using the HTTP API. Use the provided create scripts for common setups.
 
 ## Devmode Integration
 
@@ -9,113 +9,108 @@ The scripts provide instructions for using new clients in devmode development. S
 ## Security Best Practices
 
 ### Implemented Security Pattern
-- **Public Client**: For user authentication (Authorization Code flow)
-- **Confidential Client**: For service-to-service authentication (Client Credentials flow)
+- **Confidential Client**: For user authentication (Authorization Code flow) and service-to-service authentication (Client Credentials flow)
 
 ## Available Scripts
 
-### 1. `add_web_client.sh` - Public Client for User Authentication
+### 1. `create_n8n_clientCreds.sh` – Confidential client for Client Credentials
 
-**Purpose**: Creates public clients for interactive user authentication flows.
+Creates a confidential client with service accounts enabled and no browser flows, for machine-to-machine usage by n8n.
 
-**Usage**:
+**Configuration via Environment Variables:**
+
+The script automatically reads these environment variables (with defaults if not set):
+- `KEYCLOAK_URL` (default: `http://localhost:8090`)
+- `REALM` (default: `trustify`)
+- `KEYCLOAK_ADMIN` (default: `admin`)
+- `KEYCLOAK_ADMIN_PASSWORD` (default: `admin123456`)
+
+**Usage Examples:**
+
 ```bash
-./add_web_client.sh \
-  --name=my-frontend-app \
-  --redirectUri=http://localhost:3000/callback \
-  --webOrigins=http://localhost:3000 \
-  --defaultClientScopes=email,profile,roles
+# Option 1: Export environment variables first (recommended for repeated use)
+export KEYCLOAK_URL=https://sso-tpa.apps.example.com
+export REALM=chicken
+export KEYCLOAK_ADMIN=admin
+export KEYCLOAK_ADMIN_PASSWORD=your-password
+./scripts/create_n8n_clientCreds.sh
+
+# Option 2: Pass environment variables inline
+KEYCLOAK_URL=http://localhost:8090 \
+REALM=trustify \
+KEYCLOAK_ADMIN=admin \
+KEYCLOAK_ADMIN_PASSWORD=admin123456 \
+./scripts/create_n8n_clientCreds.sh
 ```
 
-**Features**:
-- ✅ Public client (no secret)
-- ✅ Authorization Code flow (standard flow)
-- ✅ Implicit flow support
-- ✅ Redirect URIs and Web Origins
-- ✅ Protocol mappers (sub, username)
-- ❌ No service accounts
-- ❌ No direct access grants
-
-**Use Cases**:
-- Single Page Applications (SPA)
-- Mobile applications
-- Desktop applications
-- Any client that needs to authenticate users
-
-### 2. `add_confidential_client.sh` - Confidential Client for Server-Side Applications
-
-**Purpose**: Creates confidential clients for server-side applications that need both user authentication and service capabilities.
-
-**Usage**:
-```bash
-./add_confidential_client.sh \
-  --name=my-backend-service \
-  --secret=my-service-secret \
-  --service-accounts=true \
-  --defaultClientScopes=email,profile,roles
-```
-
-**Features**:
-- ✅ Confidential client (with secret)
-- ✅ Client Credentials flow (direct access grants)
-- ✅ Authorization Code flow (standard flow)
-- ✅ Redirect URIs and Web Origins support
-- ✅ Service accounts
-- ✅ Protocol mappers
-
-**Use Cases**:
-- Server-side applications (N8N, workflow automation)
-- Backend services with user authentication
-- API gateways that need user context
-- Microservices with OAuth2 flows
-- Any server-side app that needs both user auth and service capabilities
+Outputs the token endpoint, client ID/secret, grant type, and scopes.
 
 ## Configuration Options
 
-### Common Options (Both Scripts)
+### Environment Variables
+
+Both `create_n8n_*.sh` scripts automatically use these environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `KEYCLOAK_URL` | Keycloak base URL | `http://localhost:8090` |
+| `REALM` | Keycloak realm name | `trustify` |
+| `KEYCLOAK_ADMIN` | Admin username | `admin` |
+| `KEYCLOAK_ADMIN_PASSWORD` | Admin password | `admin123456` |
+
+These can be set inline with the command or exported in your shell session.
+
+### Advanced Configuration (add_confidential_client.sh)
+
+The underlying `add_confidential_client.sh` script accepts command-line arguments that override environment variables:
+
+**Common Options:**
 - `--name=CLIENT_NAME` - Client name (required)
-- `--realm=REALM` - Realm name (default: trustify)
-- `--keycloak-url=URL` - Keycloak URL (default: http://localhost:8090)
-- `--admin-user=USER` - Admin username (default: admin)
-- `--admin-password=PASS` - Admin password (default: admin123456)
+- `--realm=REALM` - Realm name (overrides `REALM` env var)
+- `--keycloak-url=URL` - Keycloak URL (overrides `KEYCLOAK_URL` env var)
+- `--admin-user=USER` - Admin username (overrides `KEYCLOAK_ADMIN` env var)
+- `--admin-password=PASS` - Admin password (overrides `KEYCLOAK_ADMIN_PASSWORD` env var)
 - `--defaultClientScopes=SCOPES` - Comma-separated scopes
 - `--protocol-mappers=BOOL` - Add protocol mappers (default: true)
 
-### Web Client Specific
-- `--redirectUri=URI` - Redirect URI (required)
-- `--webOrigins=ORIGINS` - Web origins (required)
-- `--implicit-flow=BOOL` - Enable implicit flow (default: true)
-- `--standard-flow=BOOL` - Enable standard flow (default: true)
+### Notes
+- Scopes with colons (e.g., `create:document`) are supported. The scripts ensure scopes exist and link them to the client.
+- Both scripts print devmode hints for `TRUSTD_DEVMODE_ADDITIONAL_CLIENTS`.
 
-### Confidential Client Specific
+**Confidential Client Specific:**
 - `--secret=SECRET` - Client secret (required)
 - `--service-accounts=BOOL` - Enable service accounts (default: false)
 - `--direct-access-grants=BOOL` - Enable direct access grants (default: true)
+- `--standard-flow=BOOL` - Enable authorization code flow (default: true)
+- `--redirect-uris=URIS` - Comma-separated redirect URIs
+- `--web-origins=ORIGINS` - Comma-separated web origins
+
+**Note:** The `create_n8n_*.sh` scripts use environment variables and don't require command-line arguments. Use `add_confidential_client.sh` directly for advanced customization.
 
 ## Examples
 
-### Frontend Application (React/Vue/Angular)
+### Example: Use in devmode
 ```bash
-./add_web_client.sh \
-  --name=my-spa \
-  --redirectUri=http://localhost:3000/callback \
-  --webOrigins=http://localhost:3000 \
-  --defaultClientScopes=email,profile,roles,read:document
+export TRUSTD_DEVMODE_ADDITIONAL_CLIENTS="n8n-client-creds,n8n-auth-code"
+cargo run --bin trustd api --devmode --infrastructure-enabled
 ```
 
-### Backend API Service
+### Custom Client Configuration
 ```bash
-./add_confidential_client.sh \
-  --name=api-service \
-  --secret=api-secret-123 \
-  --service-accounts=true \
-  --defaultClientScopes=email,profile,roles,create:document,read:document
-```
-
-### Background Worker
-```bash
-./add_confidential_client.sh \
+# Using environment variables
+export KEYCLOAK_URL=https://sso-tpa.apps.example.com
+export REALM=myrealm
+./scripts/add_confidential_client.sh \
   --name=worker-service \
+  --secret=worker-secret-456 \
+  --service-accounts=true \
+  --defaultClientScopes=email,profile,roles,read:document
+
+# Or override environment variables with command-line arguments
+./scripts/add_confidential_client.sh \
+  --name=worker-service \
+  --realm=myrealm \
+  --keycloak-url=https://sso-tpa.apps.example.com \
   --secret=worker-secret-456 \
   --service-accounts=true \
   --defaultClientScopes=email,profile,roles,read:document
@@ -171,7 +166,7 @@ After creating clients with the scripts, you can use them in devmode by setting 
 
 ```bash
 # Set the environment variable with your new client(s)
-export TRUSTD_DEVMODE_ADDITIONAL_CLIENTS="n8n,my-other-client"
+export TRUSTD_DEVMODE_ADDITIONAL_CLIENTS="n8n-client-creds,n8n-auth-code"
 cargo run --bin trustd api --devmode --infrastructure-enabled
 
 # Or for a single client
@@ -187,19 +182,3 @@ cargo run --bin trustd api --devmode --infrastructure-enabled
 4. **Application dynamically loads** additional clients via the environment variable
 
 This approach is flexible and doesn't require recompiling the application when adding new clients.
-
-## Migration from Old Scripts
-
-If you're migrating from the original scripts:
-
-1. **Web clients**: Use `add_web_client.sh` (same functionality, better security)
-2. **Confidential clients**: Use `add_confidential_client.sh` (supports redirect URIs for server-side apps)
-3. **Hybrid scenarios**: Create separate public and confidential clients instead
-
-## Contributing
-
-When adding new features:
-- Follow OAuth2/OIDC security best practices
-- Keep user authentication and service authentication separate
-- Add comprehensive help documentation
-- Test with both existing and new clients

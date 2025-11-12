@@ -14,13 +14,20 @@ describe('Tests for common.properties.ts', () => {
     const authMethod = commonProperties.find((p) => p.name === 'authMethod');
     expect(authMethod).toBeDefined();
     expect(authMethod?.type).toBe('options');
+    expect(authMethod?.options).toHaveLength(2);
     expect(authMethod?.options).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ name: 'Authorization Code', value: 'authorizationCode' }),
-        expect.objectContaining({ name: 'Client Credentials', value: 'clientCredentials' }),
+        expect.objectContaining({
+          name: 'Trustify Client Credentials',
+          value: 'trustifyClientCredentials',
+        }),
+        expect.objectContaining({
+          name: 'RHTPA Client Credentials',
+          value: 'rhtpaClientCredentials',
+        }),
       ]),
     );
-    expect(authMethod?.default).toBe('authorizationCode');
+    expect(authMethod?.default).toBe('rhtpaClientCredentials');
   });
 
   test('It should include baseURL property with default and description', () => {

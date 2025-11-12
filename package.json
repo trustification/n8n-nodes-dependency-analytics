@@ -36,7 +36,7 @@
     "n8nNodesApiVersion": 1,
     "credentials": [
       "dist/credentials/TrustifyClientCredsOAuth2Api.credentials.js",
-      "dist/credentials/TrustifyAuthCodeOAuth2Api.credentials.js"
+      "dist/credentials/RHTPAClientCredsOAuth2Api.credentials.js"
     ],
     "nodes": [
       "dist/nodes/DependencyAnalytics/DependencyAnalytics.node.js"

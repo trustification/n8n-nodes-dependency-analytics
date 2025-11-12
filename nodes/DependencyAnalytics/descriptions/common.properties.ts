@@ -6,20 +6,26 @@ export const commonProperties: INodeProperties[] = [
     name: 'authMethod',
     type: 'options',
     options: [
-      { name: 'Authorization Code', value: 'authorizationCode' },
-      { name: 'Client Credentials', value: 'clientCredentials' },
+      { name: 'Trustify Client Credentials', value: 'trustifyClientCredentials' },
+      { name: 'RHTPA Client Credentials', value: 'rhtpaClientCredentials' },
     ],
-    default: 'authorizationCode',
-    description: 'Choose how to authenticate to Trustify API',
+    default: 'rhtpaClientCredentials',
+    description: 'Choose how to authenticate to the API',
+    required: true,
   },
   {
     displayName: 'Base URL',
     name: 'baseURL',
     type: 'string',
     default: 'http://localhost:8080/api/v2/',
-    placeholder: 'e.g. https://your-trustify-instance.com/api/v2/',
+    placeholder: 'e.g. http://localhost:8080/api/v2/',
     description: 'The base URL for your Trustify API instance',
     required: true,
+    displayOptions: {
+      show: {
+        authMethod: ['trustifyClientCredentials'],
+      },
+    },
   },
   {
     displayName: 'Resource',

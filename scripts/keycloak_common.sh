@@ -8,11 +8,19 @@ KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8090}"
 KEYCLOAK_ADMIN="${KEYCLOAK_ADMIN:-admin}"
 KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-admin123456}"
 REALM="${REALM:-trustify}"
+KEYCLOAK_SKIP_SSL="${KEYCLOAK_SKIP_SSL:-false}"
+
+# Build curl SSL option: skip SSL if explicitly set, or if using HTTPS (likely self-signed certs in dev)
+if [[ "$KEYCLOAK_SKIP_SSL" == "true" ]] || [[ "$KEYCLOAK_URL" =~ ^https:// ]]; then
+    CURL_SSL_OPTS="-k"
+else
+    CURL_SSL_OPTS=""
+fi
 
 # Function to get access token
 get_access_token() {
     local response
-    response=$(curl -s -X POST \
+    response=$(curl $CURL_SSL_OPTS -s -X POST \
         "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "username=${KEYCLOAK_ADMIN}" \
@@ -31,13 +39,13 @@ kc_api() {
     local token="$4"
     
     if [[ -n "$data" ]]; then
-        curl -s -X "$method" \
+        curl $CURL_SSL_OPTS -s -X "$method" \
             "${KEYCLOAK_URL}/admin/realms/${REALM}${endpoint}" \
             -H "Authorization: Bearer $token" \
             -H "Content-Type: application/json" \
             -d "$data"
     else
-        curl -s -X "$method" \
+        curl $CURL_SSL_OPTS -s -X "$method" \
             "${KEYCLOAK_URL}/admin/realms/${REALM}${endpoint}" \
             -H "Authorization: Bearer $token"
     fi
@@ -109,6 +117,76 @@ scopes_to_json_array() {
     echo "[$(echo "$scopes" | tr ',' '\n' | sed 's/^/"/;s/$/"/' | tr '\n' ',' | sed 's/,$//')]"
 }
 
+# Function to check if a client scope exists by name; returns ID or empty
+client_scope_exists() {
+    local scope_name="$1"
+    local token="$2"
+    kc_api "GET" "/client-scopes" "" "$token" | jq -r '.[] | select(.name == "'$scope_name'") | .id' | head -n 1
+}
+
+# Function to create a simple OIDC client scope with given name
+create_client_scope() {
+    local scope_name="$1"
+    local token="$2"
+    local scope_data='{ "name": "'"$scope_name"'", "protocol": "openid-connect" }'
+    kc_api "POST" "/client-scopes" "$scope_data" "$token" > /dev/null
+}
+
+# Ensure a comma-separated list of client scopes exist
+ensure_client_scopes() {
+    local scopes_csv="$1"
+    local token="$2"
+    IFS=',' read -r -a scopes_arr <<< "$scopes_csv"
+    for scope in "${scopes_arr[@]}"; do
+        # trim whitespace
+        local trimmed_scope
+        trimmed_scope="$(echo "$scope" | sed 's/^ *//;s/ *$//')"
+        if [[ -z "$trimmed_scope" ]]; then
+            continue
+        fi
+        local existing_id
+        existing_id="$(client_scope_exists "$trimmed_scope" "$token" || true)"
+        if [[ -z "$existing_id" || "$existing_id" == "null" ]]; then
+            echo "Creating client scope: $trimmed_scope"
+            create_client_scope "$trimmed_scope" "$token"
+            # brief pause to allow propagation
+            sleep 1
+        else
+            echo "Client scope exists: $trimmed_scope ($existing_id)"
+        fi
+    done
+}
+
+# Link (assign) default client scopes to a client by scope name list
+ensure_client_default_scopes() {
+    local client_id="$1"
+    local scopes_csv="$2"
+    local token="$3"
+    IFS=',' read -r -a scopes_arr <<< "$scopes_csv"
+    for scope in "${scopes_arr[@]}"; do
+        local trimmed_scope
+        trimmed_scope="$(echo "$scope" | sed 's/^ *//;s/ *$//')"
+        if [[ -z "$trimmed_scope" ]]; then
+            continue
+        fi
+        local scope_id
+        scope_id="$(client_scope_exists "$trimmed_scope" "$token" || true)"
+        if [[ -z "$scope_id" || "$scope_id" == "null" ]]; then
+            echo "Warning: scope '$trimmed_scope' not found; creating and retrying"
+            create_client_scope "$trimmed_scope" "$token"
+            sleep 1
+            scope_id="$(client_scope_exists "$trimmed_scope" "$token" || true)"
+        fi
+        if [[ -n "$scope_id" && "$scope_id" != "null" ]]; then
+            echo "Linking default scope '$trimmed_scope' to client ($client_id)"
+            # Use PUT to link scope as default to client; ignore errors if already linked
+            kc_api "PUT" "/clients/${client_id}/default-client-scopes/${scope_id}" "" "$token" > /dev/null || true
+        else
+            echo "Error: unable to resolve scope id for '$trimmed_scope'" >&2
+        fi
+    done
+}
+
 # Function to convert comma-separated values to JSON array
 to_json_array() {
     local values="$1"
@@ -166,7 +244,7 @@ create_client() {
     local client_name="$3"
     
     # Create the client using the working approach
-    local response=$(curl -s -X POST \
+    local response=$(curl $CURL_SSL_OPTS -s -X POST \
         "${KEYCLOAK_URL}/admin/realms/${REALM}/clients" \
         -H "Authorization: Bearer $token" \
         -H "Content-Type: application/json" \
