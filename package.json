@@ -1,15 +1,21 @@
 {
   "name": "n8n-nodes-dependency-analytics",
   "version": "0.1.0",
-  "description": "Trustify is an open-source project developed by Red Hat that provides a high-performance, searchable backend for software supply chain metadata. It enables security and development teams to store, query, and analyze data such as Software Bills of Materials (SBOMs), vulnerabilities (CVEs), and vendor advisories in standardized formats like SPDX, CycloneDX, and OSV.\n Integrated into modern CI/CD workflows, Trustify helps organizations improve visibility into their software supply chain, proactively identify risks, and reduce vulnerability management fatigue. As part of the OpenSSF’s GUAC project, Trustify contributes to building a unified, community-driven ecosystem for managing security metadata at scale—making it easier to understand provenance, assess vulnerability impact, and strengthen software resilience.",
+  "description": "Trustify :: Dependency Analytics :: n8n",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "trustify",
+    "n8n",
+    "red-hat",
+    "software-supply-chain",
+    "security",
+    "vulnerability"
   ],
   "license": "MIT",
   "homepage": "",
   "author": {
-    "name": "Adva Oren",
-    "email": "aoren@redhat.om"
+    "name": "Trustify Dependency Analytics Authors",
+    "email": "aoren@redhat.com"
   },
   "repository": {
     "type": "git",
@@ -35,8 +41,8 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/TrustifyClientCredsOAuth2Api.credentials.js",
-      "dist/credentials/RHTPAClientCredsOAuth2Api.credentials.js"
+      "dist/credentials/RHTPAClientCredsOAuth2Api.credentials.js",
+      "dist/credentials/TrustifyClientCredsOAuth2Api.credentials.js"
     ],
     "nodes": [
       "dist/nodes/DependencyAnalytics/DependencyAnalytics.node.js"
