@@ -14,13 +14,13 @@ It is designed for **DevSecOps teams and developers** to better understand and r
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-[Installation](#installation)
-[Operations](#operations)
-[Credentials](#credentials)
-[Compatibility](#compatibility)
-[Usage](#usage)
-[Resources](#resources)
-[Version history](#version-history)
+[Installation](#installation) |
+[Operations](#operations) |
+[Credentials](#credentials) |
+[Compatibility](#compatibility) |
+[Usage](#usage) |
+[Resources](#resources) |
+[Version history](#version-history) 
 
 ## Installation
 
@@ -45,8 +45,9 @@ This node currently supports the following operations:
 
 **Search Operations**
 
-- **Query by SBOM SHA256.**
+- **Query by SBOM SHA 256 | 384 | 512.**
 - **Integrate Dependency Analytics queries into conditionals for downstream automation.**
+
 
 
 ## Credentials
@@ -71,6 +72,7 @@ This node supports Client Credentials OAuth2 type for authenticating with Red Ha
 
 For more information refer to the [Trustify - OIDC Docs](https://github.com/guacsec/trustify/blob/main/docs/oidc.md)
 
+
 ## Compatibility
 
 - **Minimum tested n8n version:** 1.103.2
@@ -85,7 +87,7 @@ For more information refer to the [Trustify - OIDC Docs](https://github.com/guac
 
 2. Select an operation (e.g., “List SBOMs”)
 
-3. Provide required inputs (e.g., SBOM SHA256)
+3. Provide required inputs (e.g., SBOM SHA)
 
 4. Run the workflow and process the results
 
@@ -93,8 +95,8 @@ For more information refer to the [Trustify - OIDC Docs](https://github.com/guac
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
 * [Dependency Analytics GitHub](https://github.com/trustification)
+* [Trustify Documantation](https://docs.guac.sh/trustify/)
 
 ## Version history
 
 1.0.0 – Initial release with SBOM, vulnerability, and advisory operations
-
