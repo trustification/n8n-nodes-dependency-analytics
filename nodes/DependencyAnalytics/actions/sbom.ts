@@ -8,7 +8,7 @@ import { shapeOutput } from '../utils/output';
 export async function get({ ctx, itemIndex }: { ctx: IExecuteFunctions; itemIndex: number }) {
   const credentialName = chooseCredential(ctx, itemIndex);
   const base = getBase(ctx, itemIndex);
-  const identifierRaw = (ctx.getNodeParameter('identifier', itemIndex, '') as string).trim();
+  const identifierRaw = (ctx.getNodeParameter('identifierSha', itemIndex, '') as string).trim();
   if (!identifierRaw)
     throwError(ctx.getNode(), "The 'Identifier' parameter is required.", itemIndex);
 

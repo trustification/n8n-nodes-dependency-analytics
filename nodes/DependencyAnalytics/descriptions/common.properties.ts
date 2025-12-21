@@ -45,14 +45,26 @@ export const commonProperties: INodeProperties[] = [
   // common “get” param
   {
     displayName: 'Identifier',
-    name: 'identifier',
+    name: 'identifierCve',
+    type: 'string',
+    required: true,
+    default: '',
+    description: 'Vulnerability identifier (CVE)',
+    placeholder: 'e.g. CVE-2024-1234',
+    displayOptions: {
+      show: { operation: ['get'], resource: ['vulnerability'] },
+    },
+  },
+  {
+    displayName: 'Identifier',
+    name: 'identifierSha',
     type: 'string',
     required: true,
     default: '',
     description: 'SHA ID (sha256|sha384|sha512) or a normalized identifier',
-    placeholder: 'e.g. sha256:3a7bd3e2360a3d…, CVE-2024-1234',
+    placeholder: 'e.g. sha256:3a7bd3…, sha384:…, or sha512:…',
     displayOptions: {
-      show: { operation: ['get'], resource: ['sbom', 'vulnerability', 'advisory'] },
+      show: { operation: ['get'], resource: ['sbom', 'advisory'] },
     },
   },
 
