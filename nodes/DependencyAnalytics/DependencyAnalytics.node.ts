@@ -47,13 +47,6 @@ export class DependencyAnalytics implements INodeType {
     outputs: [NodeConnectionType.Main],
     usableAsTool: true,
     credentials: credentials,
-    requestDefaults: {
-      baseURL: 'https://rhtpa.stage.redhat.com/api/v2/',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    },
 
     properties,
   };

@@ -22,6 +22,7 @@ test('It contains all expected displayNames in properties', () => {
     'Base URL',
     'Resource',
     'Identifier',
+    'Identifier',
     'Limit',
     'Output',
     'Selected Fields',
