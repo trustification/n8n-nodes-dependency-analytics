@@ -29,14 +29,15 @@ test('It contains all expected displayNames in properties', () => {
     'Operation',
     'Sorting',
     'Selected Fields',
-    'Selected Fields (Advisory)',
+    'Operation',
+    'Sorting',
+    'Selected Fields',
+    'Selected Fields',
     'Operation',
     'Input Type',
     'PURLs',
     'SBOM SHA',
     'Sorting',
-    'Selected Fields',
-    'Operation',
     'Sorting',
   ];
   expect(displayNames).toEqual(expectedDisplayNames);

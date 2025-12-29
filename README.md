@@ -28,26 +28,42 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Operations
 
-This node currently supports the following operations:
+This node provides three operation groups that mirror the Dependency Analytics API:
 
-**SBOM Operations**
+**SBOM operations**
 
-- **Get SBOM Details:** Retrieve metadata for a given SBOM.
-- **List All SBOMs:** Query all SBOMs available in your Dependency Analytics instance.
+- **Get SBOM** - Retrieve metadata for a single SBOM by its SHA (supports `sha256:`, `sha384:`, `sha512:` prefixes).
+- **Get Many SBOMs** - List SBOMs in your instance with optional limit/sorting.
 
+**Advisory operations**
 
-**Advisory & Vulnerability Operations**
+- **Get Advisory** - Fetch a specific advisory (includes identifiers, issuer, dates, and CVE links where available).
+- **Get Many Advisories** - List advisories with optional sorting.
+- **Analyze** - Resolve advisories for supplied packages:
+  - From **PURLs**: send one or more PURLs and receive advisories per package.
+  - From an **SBOM SHA**: look up the SBOM, then return advisories associated with that SBOM.
 
-- **List Advisories:** Fetch advisories published.
-- **Get Advisory Details:** Retrieve details for a specific advisory (CVE link, publication date, issuer).
-- **Link Advisories to SBOMs:** Query advisories relevant to a specific SBOM.
+**Vulnerability operations**
 
+- **Get Vulnerability** - Retrieve a single vulnerability record (e.g., by CVE).
+- **Get Many Vulnerabilities** - List vulnerability records with optional sorting.
 
-**Search Operations**
+### Sorting and limits
 
-- **Query by SBOM SHA 256 | 384 | 512.**
-- **Integrate Dependency Analytics queries into conditionals for downstream automation.**
+- List-style operations accept multiple sort rules; they are applied in order after the items are fetched.
+- Supported sort fields:
+  - `SBOMs (Get Many)`: published, name, packages (count), size
+  - `Advisories (Get Many)`: published, title, size
+  - `Advisories (Analyze)`: published, title, average score, average severity (Critical > High > Medium > Low > None > Unknown)
+  - `Vulnerabilities (Get Many)`: published, title, average severity, average score
+- The `Limit` option caps results (default 50, minimum 1). 
 
+### Output modes
+
+- `Simplified` (default): minimal, stable shape for each resource to keep payloads small.
+- `Raw`: returns the API response as-is (use when you need every field).
+- `Selected Fields`: pick the properties you want; identifiers are always included.
+- Tip: When chaining nodes or using AI tools, prefer `Simplified` or a narrow `Selected Fields` set to avoid oversized items.
 
 
 ## Credentials
@@ -72,14 +88,6 @@ This node supports Client Credentials OAuth2 type for authenticating with Red Ha
 
 For more information refer to the [Trustify - OIDC Docs](https://github.com/guacsec/trustify/blob/main/docs/oidc.md)
 
-
-## Compatibility
-
-- **Minimum tested n8n version:** 1.103.2
-
-- **Node.js**: 22.20.0
-
-- **Tested against Dependency Analytics API (latest release)**
 
 ## Usage
 

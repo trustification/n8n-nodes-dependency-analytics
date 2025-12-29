@@ -17,33 +17,67 @@ export function simplifyOne(resource: 'sbom' | 'vulnerability' | 'advisory', obj
 
 export function simplifySbom(item: SBOM) {
   const d = first(item?.described_by) ?? {};
-  const firstPurl = first(d?.purl)?.purl;
+  const simplifyDescribedBy = (array: any) =>
+    Array.isArray(array)
+      ? array.map((p: any) => ({
+          id: p?.id ?? null,
+          name: p?.name ?? null,
+          version: p?.version ?? null,
+          purl: Array.isArray(p?.purl)
+            ? p.purl.map((pu: any) => ({ uuid: pu?.uuid ?? null, purl: pu?.purl ?? null }))
+            : null,
+        }))
+      : null;
   return {
     id: item.id,
     name: item.name ?? d.name ?? null,
     version: d.version ?? null,
-    published: item.published ?? null,
-    ingested: item.ingested ?? null,
     packages: item.number_of_packages ?? null,
     size: item.size ?? null,
     sha256: item.sha256 ?? null,
-    purl: firstPurl ?? null,
+    describedBy: simplifyDescribedBy(item?.described_by) ?? null,
     documentId: item.document_id ?? null,
   };
 }
 
 export function simplifyVuln(item: Vuln) {
+  const simplifyAdvisories = (array: any) =>
+    Array.isArray(array)
+      ? array.map((a: any) => ({
+          uuid: a?.uuid ?? null,
+          identifier: a?.identifier ?? null,
+          title: a?.title ?? null,
+          severity: a?.severity ?? null,
+          score: a?.score ?? null,
+          sboms: Array.isArray(a?.sboms)
+            ? a.sboms.map((sb: any) => ({
+                id: sb?.id ?? null,
+                labels: sb?.labels ?? null,
+                dataLicenses: sb?.data_licenses ?? null,
+              }))
+            : null,
+          purls: {
+            fixed: Array.isArray(a?.purls?.fixed)
+              ? a.purls.fixed.map((ps: any) => ({
+                  base_purl: ps?.base_purl ?? null,
+                }))
+              : null,
+            affected: Array.isArray(a?.purl_status?.affected)
+              ? a.purl_status.affected.map((ps: any) => ({
+                  base_purl: ps?.base_purl ?? null,
+                }))
+              : null,
+          },
+        }))
+      : null;
   return {
     identifier: item.identifier ?? null,
     title: item.title ?? null,
-    published: item.published ?? null,
-    modified: item.modified ?? null,
     severity: item.average_severity ?? null,
     score: item.average_score ?? null,
     cwe: first(item.cwes) ?? null,
-    advisories: Array.isArray(item.advisories) ? item.advisories : [],
+    advisories: simplifyAdvisories(item.advisories) ?? null,
     reserved: item.reserved ?? null,
-    withdrawn: item.withdrawn ?? null,
   };
 }
 
@@ -62,7 +96,6 @@ export function simplifyAdvisory(item: Advisory) {
           normative: v?.normative ?? null,
           identifier: v?.identifier ?? null,
           title: v?.title ?? null,
-          description: v?.description ?? null,
           severity: v?.severity ?? null,
           score: v?.score ?? null,
         }))

@@ -20,6 +20,7 @@ describe('Tests for actions/advisory.ts', () => {
   const ctx = {
     getNodeParameter: jest.fn(),
     getNode: jest.fn().mockReturnValue({ name: 'AdvisoryNode' }),
+    continueOnFail: jest.fn().mockReturnValue(false),
   } as any;
 
   const fakeCredential = 'foo';
@@ -27,6 +28,7 @@ describe('Tests for actions/advisory.ts', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    ctx.continueOnFail.mockReturnValue(false);
     (chooseCredential as jest.Mock).mockReturnValue(fakeCredential);
     (getBase as jest.Mock).mockReturnValue(fakeBase);
     (shapeOutput as jest.Mock).mockImplementation((_ctx, _i, _r, obj) => ({ shaped: obj }));
@@ -74,10 +76,10 @@ describe('Tests for actions/advisory.ts', () => {
         headers: defaultJsonHeaders,
       }),
     );
-    expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'advisory');
+    expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'advisory', 'getMany');
     expect(shapeOutput).toHaveBeenCalledTimes(2);
-    expect(result[0].json.items).toHaveLength(2);
-    expect(result[0].json.items[0]).toEqual({ shaped: { id: 1 } });
+    expect(result[0].json.advisories).toHaveLength(2);
+    expect(result[0].json.advisories[0]).toEqual({ shaped: { id: 1 } });
   });
 
   it('It should sort items if sort rules are provided', async () => {
@@ -91,8 +93,8 @@ describe('Tests for actions/advisory.ts', () => {
 
     const result = await advisory.getMany({ ctx, itemIndex: 0 });
 
-    expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'advisory');
-    expect(result[0].json.items.map((it: any) => it.shaped.id)).toEqual([1, 2]);
+    expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'advisory', 'getMany');
+    expect(result[0].json.advisories.map((it: any) => it.shaped.id)).toEqual([1, 2]);
   });
 
   it('It should handle missing items array gracefully', async () => {
@@ -102,8 +104,8 @@ describe('Tests for actions/advisory.ts', () => {
 
     const result = await advisory.getMany({ ctx, itemIndex: 0 });
 
-    expect(Array.isArray(result[0].json.items)).toBe(true);
-    expect(result[0].json.items).toEqual([]);
+    expect(Array.isArray(result[0].json.advisories)).toBe(true);
+    expect(result[0].json.advisories).toEqual([]);
   });
 
   it('It should throw error if identifier is empty', async () => {
@@ -118,6 +120,157 @@ describe('Tests for actions/advisory.ts', () => {
       "The 'Identifier' parameter is required.",
       0,
     );
+  });
+
+  describe('advisory.analyze', () => {
+    describe('inputType: purls', () => {
+      it('should analyze advisories by PURLs', async () => {
+        ctx.getNodeParameter
+          .mockReturnValueOnce('purls')
+          .mockReturnValueOnce('pkg:npm/lodash@4.17.19');
+
+        const parsedPurls = ['pkg:npm/lodash@4.17.19'];
+        (parsePurls as jest.Mock).mockReturnValue(parsedPurls);
+
+        const fakeResult = { advisories: [] };
+        (authedRequest as jest.Mock).mockResolvedValue(fakeResult);
+
+        const result = await advisory.analyze({ ctx, itemIndex: 0 });
+
+        expect(parsePurls).toHaveBeenCalledWith('pkg:npm/lodash@4.17.19', ctx, 0);
+        expect(authedRequest).toHaveBeenCalledWith(
+          ctx,
+          fakeCredential,
+          expect.objectContaining({
+            method: 'POST',
+            url: `${fakeBase}/vulnerability/analyze`,
+            body: { purls: parsedPurls },
+            json: true,
+          }),
+        );
+        expect(result).toEqual([{ json: fakeResult }]);
+      });
+
+      it('It should throw error if no PURLs provided', async () => {
+        ctx.getNodeParameter.mockReturnValueOnce('purls').mockReturnValueOnce('');
+
+        (parsePurls as jest.Mock).mockReturnValue([]);
+        (throwError as unknown as jest.Mock).mockImplementation(() => {
+          throw new Error('PURLs required');
+        });
+
+        await expect(advisory.analyze({ ctx, itemIndex: 0 })).rejects.toThrow();
+        expect(throwError).toHaveBeenCalledWith(
+          expect.anything(),
+          "Provide at least one PURL in 'PURLs'.",
+          0,
+        );
+      });
+
+      it('It should handle errors gracefully when continueOnFail is true', async () => {
+        ctx.getNodeParameter.mockReturnValueOnce('purls').mockReturnValueOnce('pkg:npm/foo@1.0.0');
+        ctx.continueOnFail.mockReturnValue(true);
+
+        const parsedPurls = ['pkg:npm/foo@1.0.0'];
+        (parsePurls as jest.Mock).mockReturnValue(parsedPurls);
+        (authedRequest as jest.Mock).mockRejectedValue(new Error('API Error'));
+
+        const result = await advisory.analyze({ ctx, itemIndex: 0 });
+
+        expect(result).toEqual([
+          {
+            json: {
+              message: 'API Error',
+              request: { purls: parsedPurls },
+            },
+          },
+        ]);
+      });
+
+      it('It should throw error when continueOnFail is false', async () => {
+        ctx.getNodeParameter.mockReturnValueOnce('purls').mockReturnValueOnce('pkg:npm/bar@2.0.0');
+        ctx.continueOnFail.mockReturnValue(false);
+
+        const parsedPurls = ['pkg:npm/bar@2.0.0'];
+        (parsePurls as jest.Mock).mockReturnValue(parsedPurls);
+        (authedRequest as jest.Mock).mockRejectedValue(new Error('API Error'));
+
+        await expect(advisory.analyze({ ctx, itemIndex: 0 })).rejects.toThrow('API Error');
+      });
+    });
+
+    describe('inputType: sbomSha', () => {
+      it('It should analyze advisories by SBOM SHA (prefixed)', async () => {
+        ctx.getNodeParameter
+          .mockReturnValueOnce('sbomSha')
+          .mockReturnValueOnce('sha256:abc123def456');
+
+        const sbomResponse = { id: 'sbom-123' };
+        const advisoryResponse = [{ id: 'ADV-1' }];
+        (authedRequest as jest.Mock)
+          .mockResolvedValueOnce(sbomResponse)
+          .mockResolvedValueOnce(advisoryResponse);
+
+        const result = await advisory.analyze({ ctx, itemIndex: 0 });
+        expect(authedRequest).toHaveBeenNthCalledWith(
+          1,
+          ctx,
+          fakeCredential,
+          expect.objectContaining({
+            method: 'GET',
+            url: `${fakeBase}/sbom/${encodeURIComponent('sha256:abc123def456')}`,
+          }),
+        );
+        expect(authedRequest).toHaveBeenNthCalledWith(
+          2,
+          ctx,
+          fakeCredential,
+          expect.objectContaining({
+            method: 'GET',
+            url: `${fakeBase}/sbom/sbom-123/advisory`,
+          }),
+        );
+        expect(result).toEqual([
+          {
+            json: {
+              sbomId: 'sbom-123',
+              advisories: [{ shaped: { id: 'ADV-1' } }],
+            },
+          },
+        ]);
+      });
+
+      it('It should throw error if SBOM SHA256 is empty', async () => {
+        ctx.getNodeParameter.mockReturnValueOnce('sbomSha').mockReturnValueOnce('  ');
+
+        (throwError as unknown as jest.Mock).mockImplementation(() => {
+          throw new Error('SBOM SHA required');
+        });
+
+        await expect(advisory.analyze({ ctx, itemIndex: 0 })).rejects.toThrow();
+        expect(throwError).toHaveBeenCalledWith(
+          expect.anything(),
+          "The 'SBOM SHA' parameter is required.",
+          0,
+        );
+      });
+
+      it('It should throw error if SBOM not found', async () => {
+        ctx.getNodeParameter.mockReturnValueOnce('sbomSha').mockReturnValueOnce('sha256:abc123');
+
+        (authedRequest as jest.Mock).mockResolvedValueOnce({});
+        (throwError as unknown as jest.Mock).mockImplementation(() => {
+          throw new Error('SBOM not found');
+        });
+
+        await expect(advisory.analyze({ ctx, itemIndex: 0 })).rejects.toThrow();
+        expect(throwError).toHaveBeenCalledWith(
+          expect.anything(),
+          "No SBOM found for the provided value in 'SBOM SHA'.",
+          0,
+        );
+      });
+    });
   });
 });
 
@@ -208,9 +361,9 @@ describe('Tests for actions/sbom.ts', () => {
           headers: defaultJsonHeaders,
         }),
       );
-      expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'sbom');
+      expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'sbom', 'getMany');
       expect(shapeOutput).toHaveBeenCalledTimes(3);
-      expect(result[0].json.items).toHaveLength(3);
+      expect(result[0].json.sboms).toHaveLength(3);
     });
 
     it('It should sort SBOMs when sort rules are provided', async () => {
@@ -224,8 +377,8 @@ describe('Tests for actions/sbom.ts', () => {
 
       const result = await sbom.getMany({ ctx, itemIndex: 0 });
 
-      expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'sbom');
-      expect(result[0].json.items.map((it: any) => it.shaped.name)).toEqual(['a', 'b']);
+      expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'sbom', 'getMany');
+      expect(result[0].json.sboms.map((it: any) => it.shaped.name)).toEqual(['a', 'b']);
     });
 
     it('It should handle missing items array gracefully', async () => {
@@ -235,8 +388,8 @@ describe('Tests for actions/sbom.ts', () => {
 
       const result = await sbom.getMany({ ctx, itemIndex: 0 });
 
-      expect(Array.isArray(result[0].json.items)).toBe(true);
-      expect(result[0].json.items).toEqual([]);
+      expect(Array.isArray(result[0].json.sboms)).toBe(true);
+      expect(result[0].json.sboms).toEqual([]);
     });
   });
 });
@@ -315,9 +468,9 @@ describe('Tests for actions/vulnerability.ts', () => {
           headers: defaultJsonHeaders,
         }),
       );
-      expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'vulnerability');
+      expect(readSortRules).toHaveBeenCalledWith(ctx, 0, 'vulnerability', 'getMany');
       expect(shapeOutput).toHaveBeenCalledTimes(2);
-      expect(result[0].json.items).toHaveLength(2);
+      expect(result[0].json.vulnerabilities).toHaveLength(2);
     });
 
     it('It should handle missing items array gracefully', async () => {
@@ -327,159 +480,8 @@ describe('Tests for actions/vulnerability.ts', () => {
 
       const result = await vulnerability.getMany({ ctx, itemIndex: 0 });
 
-      expect(Array.isArray(result[0].json.items)).toBe(true);
-      expect(result[0].json.items).toEqual([]);
-    });
-  });
-
-  describe('vulnerability.analyze', () => {
-    describe('inputType: purls', () => {
-      it('should analyze vulnerabilities by PURLs', async () => {
-        ctx.getNodeParameter
-          .mockReturnValueOnce('purls')
-          .mockReturnValueOnce('pkg:npm/lodash@4.17.19');
-
-        const parsedPurls = ['pkg:npm/lodash@4.17.19'];
-        (parsePurls as jest.Mock).mockReturnValue(parsedPurls);
-
-        const fakeResult = { advisories: [] };
-        (authedRequest as jest.Mock).mockResolvedValue(fakeResult);
-
-        const result = await vulnerability.analyze({ ctx, itemIndex: 0 });
-
-        expect(parsePurls).toHaveBeenCalledWith('pkg:npm/lodash@4.17.19', ctx, 0);
-        expect(authedRequest).toHaveBeenCalledWith(
-          ctx,
-          fakeCredential,
-          expect.objectContaining({
-            method: 'POST',
-            url: `${fakeBase}/vulnerability/analyze`,
-            body: { purls: parsedPurls },
-            json: true,
-          }),
-        );
-        expect(result).toEqual([{ json: fakeResult }]);
-      });
-
-      it('It should throw error if no PURLs provided', async () => {
-        ctx.getNodeParameter.mockReturnValueOnce('purls').mockReturnValueOnce('');
-
-        (parsePurls as jest.Mock).mockReturnValue([]);
-        (throwError as unknown as jest.Mock).mockImplementation(() => {
-          throw new Error('PURLs required');
-        });
-
-        await expect(vulnerability.analyze({ ctx, itemIndex: 0 })).rejects.toThrow();
-        expect(throwError).toHaveBeenCalledWith(
-          expect.anything(),
-          "Provide at least one PURL in 'PURLs'.",
-          0,
-        );
-      });
-
-      it('It should handle errors gracefully when continueOnFail is true', async () => {
-        ctx.getNodeParameter.mockReturnValueOnce('purls').mockReturnValueOnce('pkg:npm/foo@1.0.0');
-        ctx.continueOnFail.mockReturnValue(true);
-
-        const parsedPurls = ['pkg:npm/foo@1.0.0'];
-        (parsePurls as jest.Mock).mockReturnValue(parsedPurls);
-        (authedRequest as jest.Mock).mockRejectedValue(new Error('API Error'));
-
-        const result = await vulnerability.analyze({ ctx, itemIndex: 0 });
-
-        expect(result).toEqual([
-          {
-            json: {
-              message: 'API Error',
-              request: { purls: parsedPurls },
-            },
-          },
-        ]);
-      });
-
-      it('It should throw error when continueOnFail is false', async () => {
-        ctx.getNodeParameter.mockReturnValueOnce('purls').mockReturnValueOnce('pkg:npm/bar@2.0.0');
-        ctx.continueOnFail.mockReturnValue(false);
-
-        const parsedPurls = ['pkg:npm/bar@2.0.0'];
-        (parsePurls as jest.Mock).mockReturnValue(parsedPurls);
-        (authedRequest as jest.Mock).mockRejectedValue(new Error('API Error'));
-
-        await expect(vulnerability.analyze({ ctx, itemIndex: 0 })).rejects.toThrow('API Error');
-      });
-    });
-
-    describe('inputType: sbomSha', () => {
-      it('It should analyze vulnerabilities by SBOM SHA (prefixed)', async () => {
-        ctx.getNodeParameter
-          .mockReturnValueOnce('sbomSha')
-          .mockReturnValueOnce('sha256:abc123def456');
-
-        const sbomResponse = { id: 'sbom-123' };
-        const advisoryResponse = [{ id: 'ADV-1' }];
-        (authedRequest as jest.Mock)
-          .mockResolvedValueOnce(sbomResponse)
-          .mockResolvedValueOnce(advisoryResponse);
-
-        const result = await vulnerability.analyze({ ctx, itemIndex: 0 });
-        expect(authedRequest).toHaveBeenNthCalledWith(
-          1,
-          ctx,
-          fakeCredential,
-          expect.objectContaining({
-            method: 'GET',
-            url: `${fakeBase}/sbom/${encodeURIComponent('sha256:abc123def456')}`,
-          }),
-        );
-        expect(authedRequest).toHaveBeenNthCalledWith(
-          2,
-          ctx,
-          fakeCredential,
-          expect.objectContaining({
-            method: 'GET',
-            url: `${fakeBase}/sbom/sbom-123/advisory`,
-          }),
-        );
-        expect(result).toEqual([
-          {
-            json: {
-              sbomId: 'sbom-123',
-              advisories: [{ shaped: { id: 'ADV-1' } }],
-            },
-          },
-        ]);
-      });
-
-      it('It should throw error if SBOM SHA256 is empty', async () => {
-        ctx.getNodeParameter.mockReturnValueOnce('sbomSha').mockReturnValueOnce('  ');
-
-        (throwError as unknown as jest.Mock).mockImplementation(() => {
-          throw new Error('SBOM SHA required');
-        });
-
-        await expect(vulnerability.analyze({ ctx, itemIndex: 0 })).rejects.toThrow();
-        expect(throwError).toHaveBeenCalledWith(
-          expect.anything(),
-          "The 'SBOM SHA' parameter is required.",
-          0,
-        );
-      });
-
-      it('It should throw error if SBOM not found', async () => {
-        ctx.getNodeParameter.mockReturnValueOnce('sbomSha').mockReturnValueOnce('sha256:abc123');
-
-        (authedRequest as jest.Mock).mockResolvedValueOnce({});
-        (throwError as unknown as jest.Mock).mockImplementation(() => {
-          throw new Error('SBOM not found');
-        });
-
-        await expect(vulnerability.analyze({ ctx, itemIndex: 0 })).rejects.toThrow();
-        expect(throwError).toHaveBeenCalledWith(
-          expect.anything(),
-          "No SBOM found for the provided value in 'SBOM SHA'.",
-          0,
-        );
-      });
+      expect(Array.isArray(result[0].json.vulnerabilities)).toBe(true);
+      expect(result[0].json.vulnerabilities).toEqual([]);
     });
   });
 });
@@ -514,13 +516,13 @@ describe('Tests for actions/index.ts', () => {
     it('should map vulnerability operations to correct handlers', () => {
       expect(dispatch[2].vulnerability.get).toBe(vulnerability.get);
       expect(dispatch[2].vulnerability.getMany).toBe(vulnerability.getMany);
-      expect(dispatch[2].vulnerability.analyze).toBe(vulnerability.analyze);
+      expect(dispatch[2].vulnerability.analyze).toBeInstanceOf(Function);
     });
 
     it('should map advisory operations to correct handlers', () => {
       expect(dispatch[2].advisory.get).toBe(advisory.get);
       expect(dispatch[2].advisory.getMany).toBe(advisory.getMany);
-      expect(dispatch[2].advisory.analyze).toBeInstanceOf(Function);
+      expect(dispatch[2].advisory.analyze).toBe(advisory.analyze);
     });
   });
 
@@ -549,18 +551,18 @@ describe('Tests for actions/index.ts', () => {
       );
     });
 
-    it('should throw error when calling analyze on advisory', async () => {
+    it('should throw error when calling analyze on vulnerability', async () => {
       (throwError as unknown as jest.Mock).mockImplementation(() => {
-        throw new Error("The 'Analyze' operation is not available for 'Advisory'.");
+        throw new Error("The 'Analyze' operation is not available for 'Vulnerability'.");
       });
 
-      await expect(dispatch[2].advisory.analyze({ ctx, itemIndex: 0 })).rejects.toThrow(
-        "The 'Analyze' operation is not available for 'Advisory'.",
+      await expect(dispatch[2].vulnerability.analyze({ ctx, itemIndex: 0 })).rejects.toThrow(
+        "The 'Analyze' operation is not available for 'Vulnerability'.",
       );
 
       expect(throwError).toHaveBeenCalledWith(
         { name: 'TestNode' },
-        "The 'Analyze' operation is not available for 'Advisory'.",
+        "The 'Analyze' operation is not available for 'Vulnerability'.",
         0,
       );
     });
