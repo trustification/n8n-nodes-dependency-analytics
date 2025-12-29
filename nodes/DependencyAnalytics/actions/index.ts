@@ -26,18 +26,18 @@ export const dispatch: Record<
     vulnerability: {
       get: vulnerability.get,
       getMany: vulnerability.getMany,
-      analyze: vulnerability.analyze,
+      analyze: async ({ ctx, itemIndex }) => {
+        throwError(
+          ctx.getNode(),
+          "The 'Analyze' operation is not available for 'Vulnerability'.",
+          itemIndex,
+        );
+      },
     },
     advisory: {
       get: advisory.get,
       getMany: advisory.getMany,
-      analyze: async ({ ctx, itemIndex }) => {
-        throwError(
-          ctx.getNode(),
-          "The 'Analyze' operation is not available for 'Advisory'.",
-          itemIndex,
-        );
-      },
+      analyze: advisory.analyze,
     },
   },
 };

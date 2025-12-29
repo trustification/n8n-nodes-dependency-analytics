@@ -97,6 +97,36 @@ describe('Tests for sort.ts', () => {
     expect(multiCmp(a2, b2, rules2)).toBe(0);
   });
 
+  test('It should average scores.value when sorting', () => {
+    const a = { scores: [{ value: 9 }, { value: 3 }] }; // avg = 6
+    const b = { scores: [{ value: 5 }] }; // avg = 5
+    const rules: SortRule[] = [{ field: 'scores_value_avg', direction: 'asc' }];
+    expect(multiCmp(a, b, rules)).toBe(1);
+
+    const c = { scores: [{ value: 'n/a' }] };
+    const d = { scores: [] };
+    expect(multiCmp(c, d, rules)).toBe(0);
+  });
+
+  test('It should average scores.severity when sorting', () => {
+    const a = { scores: [{ severity: 'High' }, { severity: 'Critical' }] }; // avg rank = 4.5
+    const b = { scores: [{ severity: 'Medium' }] }; // avg rank = 3
+    const rules: SortRule[] = [{ field: 'scores_severity_avg', direction: 'asc' }];
+    expect(multiCmp(a, b, rules)).toBe(1);
+
+    const c = { scores: [{ severity: 'unknown' }] };
+    const d = { scores: [] };
+    expect(multiCmp(c, d, rules)).toBe(1);
+  });
+
+  test('It should sort SBOM name putting missing names last', () => {
+    const a = { name: 'aaa' };
+    const b = {};
+    const rules: SortRule[] = [{ field: 'name', direction: 'asc' }];
+    expect(multiCmp(a, b, rules)).toBe(-1);
+    expect(multiCmp(b, a, rules)).toBe(1);
+  });
+
   test('It should return 0 if all comparisons equal', () => {
     const a = { x: 1, y: 2 };
     const b = { x: 1, y: 2 };
@@ -131,27 +161,33 @@ describe('Tests for readSort.ts', () => {
     };
   });
 
-  test('It should return sortingSbom.sort path for resource `sbom`', () => {
-    const result = readSortRules(mockCtx, 0, 'sbom');
+  test('It should return sortingSbom.sort path for resource `sbom` getMany', () => {
+    const result = readSortRules(mockCtx, 0, 'sbom', 'getMany');
     expect(mockCtx.getNodeParameter).toHaveBeenCalledWith('sortingSbom.sort', 0, []);
     expect(result).toEqual(mockRules);
   });
 
-  test('It should return sortingVuln.sort path for resource `vulnerability`', () => {
-    const result = readSortRules(mockCtx, 1, 'vulnerability');
+  test('It should return sortingVuln.sort path for resource `vulnerability` getMany', () => {
+    const result = readSortRules(mockCtx, 1, 'vulnerability', 'getMany');
     expect(mockCtx.getNodeParameter).toHaveBeenCalledWith('sortingVuln.sort', 1, []);
     expect(result).toEqual(mockRules);
   });
 
-  test('It should return sortingAdvisory.sort path for resource `advisory`', () => {
-    const result = readSortRules(mockCtx, 2, 'advisory');
-    expect(mockCtx.getNodeParameter).toHaveBeenCalledWith('sortingAdvisory.sort', 2, []);
+  test('It should return sortingAdvisoryGetMany.sort path for resource `advisory` getMany', () => {
+    const result = readSortRules(mockCtx, 2, 'advisory', 'getMany');
+    expect(mockCtx.getNodeParameter).toHaveBeenCalledWith('sortingAdvisoryGetMany.sort', 2, []);
+    expect(result).toEqual(mockRules);
+  });
+
+  test('It should return sortingAdvisoryAnalyze.sort path for resource `advisory` analyze', () => {
+    const result = readSortRules(mockCtx, 3, 'advisory', 'analyze');
+    expect(mockCtx.getNodeParameter).toHaveBeenCalledWith('sortingAdvisoryAnalyze.sort', 3, []);
     expect(result).toEqual(mockRules);
   });
 
   test('It should return empty array if getNodeParameter returns null or undefined', () => {
     mockCtx.getNodeParameter.mockReturnValueOnce(null);
-    const result = readSortRules(mockCtx, 0, 'sbom');
+    const result = readSortRules(mockCtx, 0, 'sbom', 'getMany');
     expect(result).toEqual([]);
   });
 });
@@ -180,12 +216,17 @@ describe('Tests for simplify.ts', () => {
       id: '1',
       name: 'Foo SBOM',
       version: '1.0',
-      published: '2024-01-01',
-      ingested: '2024-01-02',
       packages: 5,
       size: 12345,
       sha256: 'abc123',
-      purl: 'pkg:example@1.0',
+      describedBy: [
+        {
+          id: null,
+          name: 'desc name',
+          version: '1.0',
+          purl: [{ uuid: null, purl: 'pkg:example@1.0' }],
+        },
+      ],
       documentId: 'doc-1',
     });
   });
@@ -196,12 +237,10 @@ describe('Tests for simplify.ts', () => {
       id: 'x',
       name: null,
       version: null,
-      published: null,
-      ingested: null,
       packages: null,
       size: null,
       sha256: null,
-      purl: null,
+      describedBy: null,
       documentId: null,
     });
   });
@@ -223,14 +262,30 @@ describe('Tests for simplify.ts', () => {
     expect(result).toEqual({
       identifier: 'CVE-123',
       title: 'Example vuln',
-      published: '2024-01-01',
-      modified: '2024-01-02',
       severity: 'high',
       score: 9.1,
       cwe: 'CWE-79',
-      advisories: [{}, {}],
+      advisories: [
+        {
+          uuid: null,
+          identifier: null,
+          title: null,
+          severity: null,
+          score: null,
+          sboms: null,
+          purls: { fixed: null, affected: null },
+        },
+        {
+          uuid: null,
+          identifier: null,
+          title: null,
+          severity: null,
+          score: null,
+          sboms: null,
+          purls: { fixed: null, affected: null },
+        },
+      ],
       reserved: false,
-      withdrawn: false,
     });
   });
 
@@ -239,14 +294,11 @@ describe('Tests for simplify.ts', () => {
     expect(result).toMatchObject({
       identifier: 'CVE-XYZ',
       title: null,
-      published: null,
-      modified: null,
       severity: null,
       score: null,
       cwe: null,
-      advisories: [],
+      advisories: null,
       reserved: null,
-      withdrawn: null,
     });
   });
 
@@ -313,7 +365,7 @@ describe('Tests for simplify.ts', () => {
       expect(result).toHaveProperty('name', 'Test SBOM');
       expect(result).toHaveProperty('version', '1.0.0');
       expect(result).toHaveProperty('packages', 10);
-      expect(result).toHaveProperty('purl', 'pkg:npm/test@1.0.0');
+      expect((result as any)?.describedBy?.[0]?.purl?.[0]?.purl).toBe('pkg:npm/test@1.0.0');
     });
 
     test('It should call simplifyVuln when resource is vulnerability', () => {
@@ -367,7 +419,7 @@ describe('Tests for simplify.ts', () => {
       const result = simplifyOne('vulnerability', {});
       expect(result).toHaveProperty('identifier', null);
       expect(result).toHaveProperty('title', null);
-      expect(result).toHaveProperty('advisories', []);
+      expect(result).toHaveProperty('advisories', null);
     });
 
     test('It should handle empty objects for advisory resource', () => {
@@ -519,16 +571,21 @@ describe('Tests for output.ts', () => {
 
   test('It should return simplified object when outputMode is simplified', () => {
     const simplifiedFakeObj = {
-      documentId: null,
       id: '123',
-      ingested: null,
       name: 'pkg',
-      packages: null,
-      published: null,
-      purl: 'pkg:abc',
-      sha256: null,
-      size: null,
       version: '1.0',
+      packages: null,
+      size: null,
+      sha256: null,
+      describedBy: [
+        {
+          id: null,
+          name: 'inner',
+          version: '1.0',
+          purl: [{ uuid: null, purl: 'pkg:abc' }],
+        },
+      ],
+      documentId: null,
     };
     const ctx = {
       getNodeParameter: jest.fn().mockReturnValue('simplified'),

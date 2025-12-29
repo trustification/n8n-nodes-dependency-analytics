@@ -54,7 +54,7 @@ export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
 
   const res = (await authedRequest(ctx, credentialName, options)) as any;
   const items: any[] = Array.isArray(res?.items) ? res.items.slice(0, limit) : [];
-  const rules: SortRule[] = readSortRules(ctx, itemIndex, 'sbom');
+  const rules: SortRule[] = readSortRules(ctx, itemIndex, 'sbom', 'getMany');
 
   let out = items;
   if (rules.length) out = [...out].sort((a, b) => multiCmp(a, b, rules));
@@ -62,5 +62,5 @@ export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
   out = out.slice(0, limit);
 
   const finalItems = out.map((it) => shapeOutput(ctx, itemIndex, 'sbom', it));
-  return [{ json: { ...res, items: finalItems } }];
+  return [{ json: { sboms: finalItems } }];
 }
