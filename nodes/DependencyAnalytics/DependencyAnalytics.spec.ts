@@ -33,6 +33,7 @@ test('It contains all expected displayNames in properties', () => {
     'Sorting',
     'Selected Fields',
     'Selected Fields',
+    'Selected Fields',
     'Operation',
     'Input Type',
     'PURLs',

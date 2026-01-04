@@ -35,8 +35,8 @@ export function simplifySbom(item: SBOM) {
     packages: item.number_of_packages ?? null,
     size: item.size ?? null,
     sha256: item.sha256 ?? null,
-    describedBy: simplifyDescribedBy(item?.described_by) ?? null,
-    documentId: item.document_id ?? null,
+    described_by: simplifyDescribedBy(item?.described_by) ?? null,
+    document_id: item.document_id ?? null,
   };
 }
 
@@ -53,7 +53,7 @@ export function simplifyVuln(item: Vuln) {
             ? a.sboms.map((sb: any) => ({
                 id: sb?.id ?? null,
                 labels: sb?.labels ?? null,
-                dataLicenses: sb?.data_licenses ?? null,
+                data_licenses: sb?.data_licenses ?? null,
               }))
             : null,
           purls: {
