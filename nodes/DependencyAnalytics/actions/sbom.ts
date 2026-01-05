@@ -46,8 +46,7 @@ export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
 
   const options: IHttpRequestOptions = {
     method: 'GET',
-    url: `${base}/sbom`,
-    qs: { limit },
+    url: `${base}/sbom?limit=${limit}`,
     returnFullResponse: false,
     headers: defaultJsonHeaders,
   };
