@@ -219,7 +219,7 @@ describe('Tests for simplify.ts', () => {
       packages: 5,
       size: 12345,
       sha256: 'abc123',
-      describedBy: [
+      described_by: [
         {
           id: null,
           name: 'desc name',
@@ -227,7 +227,7 @@ describe('Tests for simplify.ts', () => {
           purl: [{ uuid: null, purl: 'pkg:example@1.0' }],
         },
       ],
-      documentId: 'doc-1',
+      document_id: 'doc-1',
     });
   });
 
@@ -240,8 +240,8 @@ describe('Tests for simplify.ts', () => {
       packages: null,
       size: null,
       sha256: null,
-      describedBy: null,
-      documentId: null,
+      described_by: null,
+      document_id: null,
     });
   });
 
@@ -365,7 +365,7 @@ describe('Tests for simplify.ts', () => {
       expect(result).toHaveProperty('name', 'Test SBOM');
       expect(result).toHaveProperty('version', '1.0.0');
       expect(result).toHaveProperty('packages', 10);
-      expect((result as any)?.describedBy?.[0]?.purl?.[0]?.purl).toBe('pkg:npm/test@1.0.0');
+      expect((result as any)?.described_by?.[0]?.purl?.[0]?.purl).toBe('pkg:npm/test@1.0.0');
     });
 
     test('It should call simplifyVuln when resource is vulnerability', () => {
@@ -471,7 +471,7 @@ describe('Tests for parsePurls.ts', () => {
 });
 
 describe('Tests for http.ts', () => {
-  test('It should remove trailing slashes from baseURL', () => {
+  test('It should normalize baseURL and append /api/v2 when missing', () => {
     const mockCtx = {
       getNodeParameter: jest.fn().mockReturnValue('https://api.foobar.com///'),
     };
@@ -481,15 +481,15 @@ describe('Tests for http.ts', () => {
       0,
       'https://rhtpa.stage.devshift.net/api/v2/',
     );
-    expect(result).toBe('https://api.foobar.com');
+    expect(result).toBe('https://api.foobar.com/api/v2');
   });
 
-  test('It should return unchanged URL if no trailing slash', () => {
+  test('It should avoid duplicating /api/v2 when already present', () => {
     const mockCtx = {
-      getNodeParameter: jest.fn().mockReturnValue('https://api.foobar.com'),
+      getNodeParameter: jest.fn().mockReturnValue('https://api.foobar.com/api/v2/'),
     };
     const result = getBase(mockCtx as any, 1);
-    expect(result).toBe('https://api.foobar.com');
+    expect(result).toBe('https://api.foobar.com/api/v2');
   });
 
   test('It should return `trustifyClientCredsOAuth2Api`', () => {
@@ -577,7 +577,7 @@ describe('Tests for output.ts', () => {
       packages: null,
       size: null,
       sha256: null,
-      describedBy: [
+      described_by: [
         {
           id: null,
           name: 'inner',
@@ -585,7 +585,7 @@ describe('Tests for output.ts', () => {
           purl: [{ uuid: null, purl: 'pkg:abc' }],
         },
       ],
-      documentId: null,
+      document_id: null,
     };
     const ctx = {
       getNodeParameter: jest.fn().mockReturnValue('simplified'),

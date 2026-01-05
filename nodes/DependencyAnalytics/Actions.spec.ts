@@ -71,8 +71,8 @@ describe('Tests for actions/advisory.ts', () => {
       fakeCredential,
       expect.objectContaining({
         method: 'GET',
-        url: `${fakeBase}/advisory`,
-        qs: { limit: 2 },
+        url: `${fakeBase}/advisory?limit=2`,
+        returnFullResponse: false,
         headers: defaultJsonHeaders,
       }),
     );
@@ -356,8 +356,8 @@ describe('Tests for actions/sbom.ts', () => {
         fakeCredential,
         expect.objectContaining({
           method: 'GET',
-          url: `${fakeBase}/sbom`,
-          qs: { limit: 3 },
+          url: `${fakeBase}/sbom?limit=3`,
+          returnFullResponse: false,
           headers: defaultJsonHeaders,
         }),
       );
@@ -463,8 +463,8 @@ describe('Tests for actions/vulnerability.ts', () => {
         fakeCredential,
         expect.objectContaining({
           method: 'GET',
-          url: `${fakeBase}/vulnerability`,
-          qs: { limit: 2 },
+          url: `${fakeBase}/vulnerability?limit=2`,
+          returnFullResponse: false,
           headers: defaultJsonHeaders,
         }),
       );

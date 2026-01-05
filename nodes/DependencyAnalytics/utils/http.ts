@@ -6,7 +6,9 @@ export function getBase(ctx: IExecuteFunctions, itemIndex: number): string {
     itemIndex,
     'https://rhtpa.stage.devshift.net/api/v2/',
   ) as string;
-  return baseURLRaw.replace(/\/+$/, '');
+  const normalized = baseURLRaw.replace(/\/+$/, '');
+  const apiSuffix = '/api/v2';
+  return normalized.endsWith(apiSuffix) ? normalized : `${normalized}${apiSuffix}`;
 }
 
 export function chooseCredential(ctx: IExecuteFunctions, itemIndex: number): string {

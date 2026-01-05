@@ -45,8 +45,7 @@ export async function getMany({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
 
   const options: IHttpRequestOptions = {
     method: 'GET',
-    url: `${base}/advisory`,
-    qs: { limit },
+    url: `${base}/advisory?limit=${limit}`,
     returnFullResponse: false,
     headers: defaultJsonHeaders,
   };
@@ -305,8 +304,8 @@ export async function analyze({ ctx, itemIndex }: { ctx: IExecuteFunctions; item
         ? item.status.map((s: any) => ({
             identifier: item?.identifier ?? null,
             title: s?.title ?? null,
-            averageSeverity: s?.average_severity ?? null,
-            averageScore: s?.average_score ?? null,
+            average_severity: s?.average_severity ?? null,
+            average_score: s?.average_score ?? null,
             status: s?.status ?? null,
             packages: simplifyPackages(s?.packages),
             score: toScores(item?.scores) ?? toScores(s?.scores),
