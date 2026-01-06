@@ -6,12 +6,12 @@
   "resources": {
     "credentialDocumentation": [
       {
-        "url": ""
+        "url": "https://github.com/trustification/n8n-nodes-dependency-analytics#credentials"
       }
     ],
     "primaryDocumentation": [
       {
-        "url": ""
+        "url": "https://github.com/trustification/n8n-nodes-dependency-analytics#readme"
       }
     ]
   }

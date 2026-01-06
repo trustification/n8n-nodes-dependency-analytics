@@ -12,10 +12,10 @@
     "vulnerability"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/trustification/n8n-nodes-dependency-analytics",
   "author": {
     "name": "Trustify Dependency Analytics Authors",
-    "email": "aoren@redhat.com"
+    "email": "trusted-profile-analyzer@redhat.com"
   },
   "repository": {
     "type": "git",
