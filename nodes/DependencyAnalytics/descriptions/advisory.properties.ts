@@ -6,12 +6,11 @@ export const advisoryProperties: INodeProperties[] = [
     name: 'advisorySelectedFields',
     type: 'multiOptions',
     default: [],
-    description: "Fields to include when 'Selected Fields' output mode is selected",
+    description: "Fields to include when using 'Selected Fields'. 'Identifier' is always included.",
     options: [
       { name: 'Average Score', value: 'average_score' },
       { name: 'Average Severity', value: 'average_severity' },
       { name: 'Document ID', value: 'document_id' },
-      { name: 'Identifier', value: 'identifier' },
       { name: 'Ingested', value: 'ingested' },
       { name: 'Issuer', value: 'issuer' },
       { name: 'Issuer Name', value: 'issuer.name' },
@@ -41,10 +40,10 @@ export const advisoryProperties: INodeProperties[] = [
     name: 'advisorySelectedFields',
     type: 'multiOptions',
     default: [],
-    description: "Advisory fields to include when 'Selected Fields' output mode is selected",
+    description:
+      "Advisory fields to include when using 'Selected Fields'. 'Identifier' is always included.",
     options: [
       { name: 'Document ID', value: 'document_id' },
-      { name: 'Identifier', value: 'identifier' },
       { name: 'Issuer', value: 'issuer' },
       { name: 'Issuer Name', value: 'issuer.name' },
       { name: 'Labels', value: 'labels' },
@@ -71,13 +70,13 @@ export const advisoryProperties: INodeProperties[] = [
     name: 'advisorySelectedFields',
     type: 'multiOptions',
     default: [],
-    description: "Advisory fields to include when 'Selected Fields' output mode is selected",
+    description:
+      "Advisory fields to include when using 'Selected Fields'. 'Identifier' is always included.",
     options: [
       { name: 'CWEs', value: 'cwes' },
       { name: 'Description', value: 'description' },
       { name: 'Discovered', value: 'discovered' },
       { name: 'Document ID', value: 'document_id' },
-      { name: 'Identifier', value: 'identifier' },
       { name: 'Issuer', value: 'issuer' },
       { name: 'Issuer Name', value: 'issuer.name' },
       { name: 'Labels', value: 'labels' },

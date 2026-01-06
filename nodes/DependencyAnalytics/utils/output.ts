@@ -4,8 +4,7 @@ import { simplifyOne } from './simplify';
 type Resource = 'sbom' | 'vulnerability' | 'advisory';
 
 function ensureId(resource: Resource, fields: string[]): string[] {
-  const must =
-    resource === 'sbom' ? 'id' : resource === 'vulnerability' ? 'identifier' : 'document_id';
+  const must = resource === 'sbom' ? 'id' : 'identifier';
   return fields.includes(must) ? fields : [must, ...fields];
 }
 
