@@ -22,7 +22,6 @@ export const sbomProperties: INodeProperties[] = [
       { name: 'Described By PURL', value: 'described_by.0.purl' },
       { name: 'Described By Version', value: 'described_by.0.version' },
       { name: 'Document ID', value: 'document_id' },
-      { name: 'ID', value: 'id' },
       { name: 'Ingested', value: 'ingested' },
       { name: 'Label File', value: 'labels.file' },
       { name: 'Label Importer', value: 'labels.importer' },

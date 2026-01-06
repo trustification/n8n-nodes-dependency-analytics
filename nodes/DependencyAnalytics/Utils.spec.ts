@@ -628,4 +628,21 @@ describe('Tests for output.ts', () => {
     expect(result).toHaveProperty('title', 'test');
     expect(result).toHaveProperty('score', 9.8);
   });
+
+  test('It should always include identifier for advisory in selected output', () => {
+    const ctx = {
+      getNodeParameter: jest.fn().mockImplementation((name) => {
+        if (name === 'outputMode') return 'selected';
+        if (name === 'advisorySelectedFields') return ['title'];
+        return [];
+      }),
+    } as unknown as IExecuteFunctions;
+
+    const obj = { identifier: 'ADV-123', document_id: 'doc-1', title: 'hello' };
+    const result = shapeOutput(ctx, 0, 'advisory', obj);
+
+    expect(result).toHaveProperty('identifier', 'ADV-123');
+    expect(result).toHaveProperty('title', 'hello');
+    expect(result).not.toHaveProperty('document_id');
+  });
 });
