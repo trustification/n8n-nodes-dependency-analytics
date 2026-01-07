@@ -104,7 +104,3 @@ For more information refer to the [Trustify - OIDC Docs](https://github.com/guac
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
 * [Dependency Analytics GitHub](https://github.com/trustification)
 * [Trustify Documantation](https://docs.guac.sh/trustify/)
-
-## Version history
-
-1.0.0 – Initial release with SBOM, vulnerability, and advisory operations
