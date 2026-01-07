@@ -15,3 +15,5 @@ package-lock.json
 README.md
 tsconfig.json
 LICENSE
+**/*.spec.ts
+
