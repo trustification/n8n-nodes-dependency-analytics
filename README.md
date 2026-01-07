@@ -105,6 +105,3 @@ For more information refer to the [Trustify - OIDC Docs](https://github.com/guac
 * [Dependency Analytics GitHub](https://github.com/trustification)
 * [Trustify Documantation](https://docs.guac.sh/trustify/)
 
-## Version history
-
-1.0.0 – Initial release with SBOM, vulnerability, and advisory operations

@@ -1,2 +1,7 @@
 .DS_Store
 *.tsbuildinfo
+
+# Ignore all spec/test files
+**/*.spec.js
+**/*.spec.d.ts
+**/*.spec.js.map
