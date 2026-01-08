@@ -88,6 +88,13 @@ This node supports Client Credentials OAuth2 type for authenticating with Red Ha
 
 For more information refer to the [Trustify - OIDC Docs](https://github.com/guacsec/trustify/blob/main/docs/oidc.md)
 
+> **Note:** If you are running n8n locally and see the error *"The connection cannot be established, this usually occurs due to an incorrect host (domain) value"*, try:
+> ```bash
+> export NODE_TLS_REJECT_UNAUTHORIZED=0
+> n8n start
+> ```
+
+
 
 ## Usage
 
