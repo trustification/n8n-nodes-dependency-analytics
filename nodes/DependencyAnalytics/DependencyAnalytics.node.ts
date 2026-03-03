@@ -1,7 +1,7 @@
 import {
   INodeType,
   INodeTypeDescription,
-  NodeConnectionType,
+  NodeConnectionTypes,
   IExecuteFunctions,
   INodeExecutionData,
   INodeCredentialDescription,
@@ -43,8 +43,8 @@ export class DependencyAnalytics implements INodeType {
     defaults: {
       name: 'Dependency Analytics',
     },
-    inputs: [NodeConnectionType.Main],
-    outputs: [NodeConnectionType.Main],
+    inputs: [NodeConnectionTypes.Main],
+    outputs: [NodeConnectionTypes.Main],
     usableAsTool: true,
     credentials: credentials,
 
